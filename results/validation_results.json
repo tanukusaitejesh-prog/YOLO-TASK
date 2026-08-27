@@ -1,0 +1,29 @@
+{
+  "note": "Validation metrics for completed experiments. Experiments 3 (high_resolution) and 4 (final) still training.",
+  "experiments": {
+    "baseline": {
+      "experiment": "baseline",
+      "best_epoch": 97,
+      "val_precision": 0.9704,
+      "val_recall": 0.9689,
+      "val_f1": 0.9696,
+      "val_map50": 0.9754,
+      "val_map50_95": 0.8347,
+      "val_box_loss": 0.5822,
+      "val_cls_loss": 0.3059,
+      "val_dfl_loss": 0.9736
+    },
+    "augmentation": {
+      "experiment": "augmentation",
+      "best_epoch": 99,
+      "val_precision": 0.9696,
+      "val_recall": 0.9645,
+      "val_f1": 0.967,
+      "val_map50": 0.9846,
+      "val_map50_95": 0.82,
+      "val_box_loss": 0.6622,
+      "val_cls_loss": 0.3416,
+      "val_dfl_loss": 1.0067
+    }
+  }
+}
