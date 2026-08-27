@@ -1,0 +1,28 @@
+{
+  "total_raw_annotated": 2512,
+  "near_duplicates_removed": 369,
+  "final_clean_retained": 2143,
+  "removal_percentage": "14.7%",
+  "source_breakdown": {
+    "vikashs_1527": {
+      "raw": 1527,
+      "retained": 1522,
+      "removed": 5,
+      "format": "Polygon segmentation -> Bounding box"
+    },
+    "fiw_706": {
+      "raw": 691,
+      "retained": 327,
+      "removed": 364,
+      "format": "Bounding box"
+    },
+    "utfyu_116": {
+      "raw": 294,
+      "retained": 294,
+      "removed": 0,
+      "format": "Bounding box"
+    }
+  },
+  "hash_algorithm": "16x16 Average Perceptual Hash (256-bit)",
+  "audit_finding": "364 of the 369 removed duplicates originated from fiw_706 (high-frequency video surveillance burst captures). Deduplication effectively removed frame-to-frame temporal redundancy without discarding independent architectural door variations."
+}

@@ -1,0 +1,5 @@
+﻿experiment,model,imgsz,epochs,batch,lr0,augmentation_note,precision,recall,f1,map50,map50_95,latency_ms,fps,training_time_min,notes
+baseline,yolov8n,640,100,16,0.01,default,,,,,,,,Fill after running evaluate.py
+augmentation,yolov8n,640,100,16,0.01,+hsv_v +degrees +scale +shear +mixup,,,,,,,,Fill after running evaluate.py
+high_resolution,yolov8n,960,100,8,0.01,default,,,,,,,,Fill after running evaluate.py
+final,yolov8n,800,100,12,0.01,+aug +moderate_res,,,,,,,,Fill after running evaluate.py

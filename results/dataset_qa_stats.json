@@ -1,0 +1,26 @@
+{
+  "train": {
+    "images": 1541,
+    "open_instances": 924,
+    "closed_instances": 617,
+    "total_instances": 1541,
+    "instances_per_image": 1.0,
+    "avg_box_area": 0.1719
+  },
+  "val": {
+    "images": 321,
+    "open_instances": 180,
+    "closed_instances": 141,
+    "total_instances": 321,
+    "instances_per_image": 1.0,
+    "avg_box_area": 0.178
+  },
+  "test": {
+    "images": 281,
+    "open_instances": 178,
+    "closed_instances": 103,
+    "total_instances": 281,
+    "instances_per_image": 1.0,
+    "avg_box_area": 0.167
+  }
+}

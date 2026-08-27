@@ -1,0 +1,36 @@
+﻿# ── Core ML / CV ──────────────────────────────────────────────────────────────
+ultralytics==8.3.40     # YOLOv8 training, evaluation, and ONNX export
+torch>=2.1.0            # PyTorch backend (install CUDA build manually if needed)
+torchvision>=0.16.0
+opencv-python==4.10.0.84
+numpy>=1.26.0
+
+# ── ONNX runtime ──────────────────────────────────────────────────────────────
+onnx==1.16.1            # model structure validation
+onnxruntime==1.18.1     # CPU inference  (use onnxruntime-gpu for CUDA)
+onnxsim                 # simplify ONNX graph (called via model.export(simplify=True))
+
+# ── Data / Analysis ───────────────────────────────────────────────────────────
+pandas>=2.0.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+Pillow>=10.0.0
+PyYAML>=6.0
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+tqdm
+requests
+
+# ── Installation notes ────────────────────────────────────────────────────────
+# 1. Create a virtual environment:
+#       python -m venv venv
+#       source venv/bin/activate   (Linux/macOS)
+#       venv\Scripts\activate      (Windows)
+#
+# 2. Install:
+#       pip install -r requirements.txt
+#
+# 3. For GPU support, install the CUDA-enabled PyTorch build FIRST:
+#       pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#    then:
+#       pip install -r requirements.txt

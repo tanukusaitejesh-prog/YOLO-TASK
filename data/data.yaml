@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────
+# Swift Robotics — Door Open / Closed Detection
+# Dataset configuration for Ultralytics YOLO
+# ─────────────────────────────────────────────────────────────
+
+path: C:/Users/saite/OneDrive/Desktop/SwiftR/dataset
+
+train: images/train
+val:   images/val
+test:  images/test
+
+# ── Classes ───────────────────────────────────────────────────
+nc: 2
+
+names:
+  0: door_open
+  1: door_closed

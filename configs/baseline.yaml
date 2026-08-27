@@ -1,0 +1,45 @@
+﻿# ─────────────────────────────────────────────────────────────
+# Experiment 1 — Baseline
+#
+# Hypothesis:
+#   A standard YOLOv8n config with default hyperparameters gives a
+#   reproducible reference point for all subsequent experiments.
+#
+# Nothing is tuned here. The baseline exists purely to answer:
+#   "How well does the model perform with zero domain-specific tuning?"
+# ─────────────────────────────────────────────────────────────
+
+experiment: baseline
+
+# ── Model ─────────────────────────────────────────────────────
+# YOLOv8n chosen because:
+#   • Smallest variant (~3.2M params) → fast enough for real-time robotics
+#   • Transfer-learned from COCO → strong generalisation with small datasets
+#   • Establishes a fair latency baseline before any accuracy/speed tradeoffs
+model: yolov8n.pt
+
+# ── Training ──────────────────────────────────────────────────
+imgsz:          640
+epochs:         100
+batch:          16
+lr0:            0.01
+lrf:            0.01
+momentum:       0.937
+weight_decay:   0.0005
+warmup_epochs:  3
+seed:           42        # fixed — every experiment must be reproducible
+
+# ── Augmentation (Ultralytics defaults — do not touch for baseline) ────
+hsv_h:          0.015
+hsv_s:          0.7
+hsv_v:          0.4
+degrees:        0.0
+translate:      0.1
+scale:          0.5
+shear:          0.0
+perspective:    0.0
+flipud:         0.0       # vertical flip is unrealistic for doors
+fliplr:         0.5
+mosaic:         1.0
+mixup:          0.0
+copy_paste:     0.0

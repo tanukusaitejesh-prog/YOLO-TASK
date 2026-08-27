@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────
+# Experiment 3 — Resolution
+#
+# Hypothesis:
+#   Increasing input resolution 640 → 960 improves detection of doors
+#   that are small in the frame (captured from a distance) or partially
+#   visible, because finer detail is preserved through the backbone.
+#
+# Expected tradeoffs:
+#   Better localisation (higher mAP@0.5:0.95) but slower inference.
+#   This experiment measures whether the accuracy gain is worth the cost.
+#
+# Changed vs Baseline:
+#   imgsz   640 → 960
+#   batch    16 → 8     (memory constraint at higher resolution)
+#
+# Held constant vs Baseline:
+#   model, epochs, all LR params, augmentation, seed
+# ─────────────────────────────────────────────────────────────
+
+experiment: high_resolution
+
+model: yolov8n.pt
+
+imgsz:          960       # ↑ key change — more pixels per door
+epochs:         100
+batch:          8         # ↓ halved to fit 960x960 in GPU memory
+lr0:            0.01
+lrf:            0.01
+momentum:       0.937
+weight_decay:   0.0005
+warmup_epochs:  3
+seed:           42
+
+# Augmentation identical to baseline — only resolution changes
+hsv_h:          0.015
+hsv_s:          0.7
+hsv_v:          0.4
+degrees:        0.0
+translate:      0.1
+scale:          0.5
+shear:          0.0
+perspective:    0.0
+flipud:         0.0
+fliplr:         0.5
+mosaic:         0.0       # disabled at 960px: mosaic requires 1920x1920x3 RAM allocation which OOMs on RTX 3050 4GB
+mixup:          0.0
+copy_paste:     0.0

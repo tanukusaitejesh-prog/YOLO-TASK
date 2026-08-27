@@ -1,0 +1,48 @@
+﻿# ─────────────────────────────────────────────────────────────
+# Experiment 2 — Augmentation
+#
+# Hypothesis:
+#   Stronger photometric and geometric augmentation will improve
+#   generalisation to the lighting / viewpoint variation a robot
+#   encounters: corridor lights switching, different camera angles,
+#   partially obstructed views.
+#
+# Changed vs Baseline (one factor group — augmentation only):
+#   hsv_v       0.4  → 0.6    brighter/darker corridors
+#   degrees     0.0  → 5.0    camera pitch / roll on robot
+#   scale       0.5  → 0.65   doors at different distances
+#   shear       0.0  → 2.0    perspective approximation
+#   perspective 0.0  → 0.0005 mild warp
+#   mixup       0.0  → 0.1    light regularisation
+#
+# Held constant vs Baseline:
+#   model, imgsz, epochs, batch, all LR params, seed
+# ─────────────────────────────────────────────────────────────
+
+experiment: augmentation
+
+model: yolov8n.pt
+
+imgsz:          640
+epochs:         100
+batch:          16
+lr0:            0.01
+lrf:            0.01
+momentum:       0.937
+weight_decay:   0.0005
+warmup_epochs:  3
+seed:           42
+
+hsv_h:          0.015
+hsv_s:          0.7
+hsv_v:          0.6       # ↑ brightness jitter
+degrees:        5.0       # ↑ rotation
+translate:      0.1
+scale:          0.65      # ↑ scale range
+shear:          2.0       # ↑ shear
+perspective:    0.0005    # ↑ perspective warp
+flipud:         0.0
+fliplr:         0.5
+mosaic:         1.0
+mixup:          0.1       # ↑ light mixup
+copy_paste:     0.0

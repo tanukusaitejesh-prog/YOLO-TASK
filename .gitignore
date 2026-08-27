@@ -1,0 +1,48 @@
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# ── YOLO training run artefacts (large intermediate files) ────
+runs/
+
+# ── Dataset images (not committed — too large, sourced via Roboflow) ─
+dataset/images/
+dataset/labels/
+data/raw/
+
+# ── PyTorch weights (large binary — models/best.onnx IS committed) ───
+*.pt
+*.engine
+*.trt
+
+# ── Results: commit CSV + JSON summaries, skip large image dumps ──
+results/predictions/
+results/failure_analysis/
+results/dataset_preview_*.jpg
+results/dedup_sample_audit.jpg
+
+# ── Jupyter / IDE ─────────────────────────────────────────────
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Secrets ───────────────────────────────────────────────────
+.env
+*.key
+
+# ── Temp / logs ───────────────────────────────────────────────
+*.log
+*.tmp

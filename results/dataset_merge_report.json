@@ -1,0 +1,55 @@
+{
+  "sources": {
+    "fiw_706": 691,
+    "utfyu_116": 294,
+    "vikashs_1527": 1527
+  },
+  "total_raw": 2512,
+  "removed": {
+    "corrupted": 0,
+    "duplicates": 369
+  },
+  "kept": 2143,
+  "unmapped_classes": [],
+  "splits": {
+    "train": {
+      "images": 1541,
+      "door_open": 924,
+      "door_closed": 617
+    },
+    "val": {
+      "images": 321,
+      "door_open": 180,
+      "door_closed": 141
+    },
+    "test": {
+      "images": 281,
+      "door_open": 178,
+      "door_closed": 103
+    }
+  },
+  "seed": 42,
+  "source_breakdown": {
+    "vikashs_1527": {
+      "raw": 1527,
+      "retained": 1522,
+      "removed": 5,
+      "format": "Polygon segmentation -> Bounding box"
+    },
+    "fiw_706": {
+      "raw": 691,
+      "retained": 327,
+      "removed": 364,
+      "format": "Bounding box"
+    },
+    "utfyu_116": {
+      "raw": 294,
+      "retained": 294,
+      "removed": 0,
+      "format": "Bounding box"
+    }
+  },
+  "total_raw_annotated": 2512,
+  "total_retained": 2143,
+  "total_duplicates_removed": 369
+}
