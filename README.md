@@ -168,7 +168,7 @@ Following model selection on validation data, the winning model was evaluated **
 | **Actual `door_closed`** | **1** (1.0%) | **97** (94.2%) | 5 (4.8%) | 103 |
 
 > **Methodological Note on Decision Audit vs Object Detection Recall:**
-> This table summarizes the classification state assignments across test scenes. It is distinct from the Ultralytics object-detection precision/recall metrics above, which enforce strict spatial IoU bounding box overlap thresholds ($\text{IoU} \ge 0.50$). This accounts for minor differences between strict spatial detection recall ($92.86\%$) and discrete image-level state classification ($94.2\%$).
+> This table summarizes classification-state assignments and is distinct from the Ultralytics object-detection metrics, which use IoU-based matching. Therefore, the two recall figures should not be interpreted as directly equivalent.
 
 > **Critical Safety Asymmetry in Robotics:**
 > - **Safety-Critical Failure Mode (Actual Closed $\to$ Predicted Open):** Occurred only **1 time out of 103 closed doors ($0.97\%$)**. In mobile robotics, falsely classifying a closed door as open is a critical perception error because downstream path planners may attempt to route through a physical barrier. The model demonstrates an exceptionally low **$<1\%$ false-traversability rate**.
@@ -257,7 +257,7 @@ To integrate perception into a mobile robot's navigation stack (e.g., ROS2 / Nav
               ▼                     ▼                     ▼
       [Conf >= 0.60]        [0.25 <= Conf < 0.60]    [Conf < 0.25 OR Closed]
               │                     │                     │
-    [Temporal Filter]       [Caution State]         [Lethal Obstacle]
+    [Temporal Filter]       [Caution State]         [Navigation Obstacle]
   (3-frame majority vote)  (Slow to 0.1 m/s,        (Costmap: Blocked)
               │             accumulate 5 frames)          │
     ┌─────────┴─────────┐           │                     ▼
@@ -300,7 +300,7 @@ def resolve_traversal_state(detections, frame_history):
         
     # 3. Default to safe halt on closed door or low confidence
     else:
-        return "HALT_AND_REROUTE"    # Update Nav2 Costmap: Lethal Obstacle
+        return "HALT_AND_REROUTE"    # Update Nav2 Costmap: Non-Traversable Obstacle
 ```
 
 ### End-to-End Edge Pipeline
