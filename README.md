@@ -213,14 +213,14 @@ Visual inspection of difficult and low-confidence test detections identifies fiv
 
 Benchmarks were conducted using 10 warmup iterations followed by 100 timed iterations on an NVIDIA GeForce RTX 3050 Laptop GPU (4 GB VRAM):
 
-| Model Variant | Runtime / Engine | Input Resolution | Mean Latency (ms) | Throughput (FPS) | Execution Device |
-|---|---|---:|---:|---:|---|
-| `baseline` 🏆 | PyTorch CUDA (FP16) | 640×640 | 22.05 | ~45.3 | NVIDIA RTX 3050 Laptop GPU |
-| `best_onnx_cuda` | ONNXRuntime (CUDA EP) | 640×640 | 25.52 (P50: 20.2) | ~39.2 | NVIDIA RTX 3050 Laptop GPU |
-| `augmentation` | PyTorch CUDA (FP16) | 640×640 | 21.23 | ~47.1 | NVIDIA RTX 3050 Laptop GPU |
-| `final` | PyTorch CUDA (FP16) | 800×800 | 24.94 | ~40.1 | NVIDIA RTX 3050 Laptop GPU |
-| `high_resolution` | PyTorch CUDA (FP16) | 960×960 | 26.56 | ~37.6 | NVIDIA RTX 3050 Laptop GPU |
-| `best_onnx_cpu` | ONNXRuntime (CPU EP) | 640×640 | 73.66 | ~13.6 | Host CPU (Default EP) |
+| Model Variant | Runtime / Engine | Input Resolution | Mean Latency (ms) | Throughput (FPS) | Execution Device | Role / Status |
+|---|---|---:|---:|---:|---|---|
+| `baseline` | PyTorch CUDA (FP16) | 640×640 | 22.05 | ~45.3 | NVIDIA RTX 3050 Laptop GPU | **Selected Winner** (Validation Rule) |
+| `best_onnx_cuda` | ONNXRuntime (CUDA EP) | 640×640 | 25.52 (P50: 20.2) | ~39.2 | NVIDIA RTX 3050 Laptop GPU | Exported Production Model |
+| `augmentation` | PyTorch CUDA (FP16) | 640×640 | 21.23 | ~47.1 | NVIDIA RTX 3050 Laptop GPU | Candidate Exp 2 |
+| `final` | PyTorch CUDA (FP16) | 800×800 | 24.94 | ~40.1 | NVIDIA RTX 3050 Laptop GPU | Candidate Exp 4 |
+| `high_resolution` | PyTorch CUDA (FP16) | 960×960 | 26.56 | ~37.6 | NVIDIA RTX 3050 Laptop GPU | Candidate Exp 3 |
+| `best_onnx_cpu` | ONNXRuntime (CPU EP) | 640×640 | 73.66 | ~13.6 | Host CPU (Default EP) | Cross-Platform Fallback |
 
 > **Technical Note on Inference Latency & Runtimes:**
 > - **ONNX on CUDA (`CUDAExecutionProvider`):** Achieved **$25.52\text{ ms}$ mean** (median $20.24\text{ ms}$, $\sim 39.2\text{ FPS}$) on the NVIDIA RTX 3050 GPU, matching native PyTorch CUDA speeds ($22.05\text{ ms}$) within static graph execution.
