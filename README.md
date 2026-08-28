@@ -144,12 +144,23 @@ Following model selection on validation data, the winning model was evaluated **
 |---|---|---:|---:|---:|---:|---:|
 | **Baseline** (`baseline`) | **Held-out Test** | **0.9651** | **0.9442** | **0.9546** | **0.9780** | **0.8274** |
 
+### Example Test Predictions
+Below are representative sample predictions on held-out test scenes depicting `door_open` (Class 0) and `door_closed` (Class 1) with bounding boxes and model confidence:
+
+![Example Test Predictions](results/predictions/example_predictions_showcase.jpg)
+
+Individual high-resolution sample predictions are available in [`results/predictions/`](results/predictions/):
+- [`example_prediction_open_1.jpg`](results/predictions/example_prediction_open_1.jpg) & [`example_prediction_open_2.jpg`](results/predictions/example_prediction_open_2.jpg)
+- [`example_prediction_closed_1.jpg`](results/predictions/example_prediction_closed_1.jpg) & [`example_prediction_closed_2.jpg`](results/predictions/example_prediction_closed_2.jpg)
+
 
 ## 9. Observed Failure Modes & Error Analysis
 
 > **Protocol Note:** Failure analysis was performed after the final model configuration was locked and after the held-out test evaluation. No subsequent model-selection decisions were made using the test set.
 
-Visual inspection of difficult and low-confidence test detections (`results/failure_analysis/failure_gallery.jpg`) identifies five observable failure modes:
+Visual inspection of difficult and low-confidence test detections identifies five observable failure modes:
+
+![Observed Failure Case Gallery](results/failure_analysis/failure_gallery.jpg)
 
 | Observed Failure Mode | Visual Pattern | Likely Root Cause | Potential Future Improvement |
 |---|---|---|---|
