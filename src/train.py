@@ -18,7 +18,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CONFIGS_DIR  = PROJECT_ROOT / "configs"
 DATA_YAML    = PROJECT_ROOT / "data" / "data.yaml"
-VALID_EXPERIMENTS = ["baseline", "augmentation", "high_resolution", "final"]
+VALID_EXPERIMENTS = ["baseline", "augmentation", "high_resolution", "final",
+                     "lr_schedule", "model_size"]
 
 
 def load_config(experiment: str) -> dict:
