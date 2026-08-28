@@ -307,10 +307,11 @@ def resolve_traversal_state(detections, frame_history):
 ### End-to-End Edge Pipeline
 ```
 [Current Verified Deliverables]
-  ├── PyTorch FP16 CUDA Profiling (NVIDIA RTX 3050 Laptop GPU) -> 22.05 ms
+  ├── PyTorch FP16 CUDA Profiling (NVIDIA RTX 3050 Laptop GPU) -> 22.05 ms (~45.3 FPS)
   ├── Static-Graph ONNX Export (opset 12, simplified graph) -> models/best.onnx
   ├── Three-Tier ONNX Verification (Graph integrity, runtime execution, output parity)
-  └── ONNXRuntime FP32 Validation Benchmark
+  ├── ONNXRuntime CUDA Benchmark (CUDAExecutionProvider) -> 25.52 ms (~39.2 FPS)
+  └── ONNXRuntime CPU Fallback Benchmark (CPUExecutionProvider) -> 73.66 ms (~13.6 FPS)
               │
               ▼
 [Production Edge Deployment Path]
