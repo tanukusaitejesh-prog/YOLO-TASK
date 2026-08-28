@@ -1,0 +1,23 @@
+{
+  "runtime": "PyTorch FP16 (CUDA)",
+  "device": "cuda:0",
+  "mean_ms": 18.8,
+  "std_ms": 3.54,
+  "min_ms": 14.44,
+  "max_ms": 31.78,
+  "fps": 53.2,
+  "n_runs": 100,
+  "hardware": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.4",
+    "cpu": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "torch": "2.5.1+cu121",
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "cuda": "12.1",
+    "onnxruntime": "1.19.0"
+  },
+  "imgsz": 640,
+  "warmup": 10,
+  "weights": "runs/detect/model_size/weights/best.pt"
+}
