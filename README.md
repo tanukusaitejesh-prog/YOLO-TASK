@@ -153,16 +153,14 @@ Following model selection on validation data, the winning model was evaluated **
 
 ### Confusion Matrix & Robotics Safety Asymmetry Analysis
 
-$$\begin{array}{c|cc|c}
-\textbf{Ground Truth \ Predicted} & \textbf{Predicted Open} & \textbf{Predicted Closed} & \textbf{Missed / Background} \\
-\hline
-\textbf{Actual Open (178)} & \mathbf{172}\ (96.6\%) & 5\ (2.8\%) & 1\ (0.6\%) \\
-\textbf{Actual Closed (103)} & \mathbf{1}\ (1.0\%) & \mathbf{97}\ (94.2\%) & 5\ (4.8\%) \\
-\end{array}$$
+| Ground Truth \ Predicted | Predicted `door_open` | Predicted `door_closed` | Background / Missed | Total Actual |
+|---|---:|---:|---:|---:|
+| **Actual `door_open`** | **172** (96.6%) | 5 (2.8%) | 1 (0.6%) | 178 |
+| **Actual `door_closed`** | **1** (1.0%) | **97** (94.2%) | 5 (4.8%) | 103 |
 
 > **Critical Safety Asymmetry in Robotics:**
-> - **Catastrophic Failure Mode (Actual Closed $\to$ Predicted Open):** Occurred only **1 time out of 103 closed doors ($0.97\%$)**. In mobile robotics, falsely classifying a closed door as open is a severe hazard because the path planner may attempt to drive through a physical obstacle. The model demonstrates a **$<1\%$ false-traversability rate**.
-> - **Benign Suboptimal Mode (Actual Open $\to$ Predicted Closed):** Occurred 5 times ($2.8\%$). This failure mode is fail-safe: the robot halts or replans an alternate route, causing minor latency rather than a collision.
+> - **Safety-Critical Failure Mode (Actual Closed $\to$ Predicted Open):** Occurred only **1 time out of 103 closed doors ($0.97\%$)**. In mobile robotics, falsely classifying a closed door as open is a critical perception error because downstream path planners may attempt to route through a physical barrier. The model demonstrates an exceptionally low **$<1\%$ false-traversability rate**.
+> - **Benign Suboptimal Mode (Actual Open $\to$ Predicted Closed):** Occurred 5 times ($2.8\%$). This failure mode is inherently fail-safe: the robot momentarily pauses or re-observes the scene rather than initiating a collision-prone movement.
 
 ![Normalized Confusion Matrix](results/confusion_matrix_normalized.png)
 
@@ -214,7 +212,7 @@ Benchmarks were conducted using 10 warmup iterations followed by 100 timed itera
 > **Technical Note on ONNXRuntime Latency:**
 > - In this benchmark environment, ONNXRuntime executed on the **Host CPU** using the default CPUExecutionProvider. ONNXRuntime served primarily for **graph serialization integrity and output tensor validation**.
 > - The native PyTorch pipeline utilized the **NVIDIA RTX 3050 Laptop GPU in FP16 half-precision** ($22.05\text{ ms}$).
-> - For actual onboard AMR deployment on embedded hardware (e.g., NVIDIA Jetson Orin Nano / AGX), the exported static ONNX graph would be compiled directly to a **TensorRT FP16 engine**, achieving estimated inference speeds of $\mathbf{5 - 10\text{ ms}}$ ($100 - 200\text{ FPS}$).
+> - For actual onboard AMR deployment on embedded hardware (e.g., NVIDIA Jetson Orin Nano / AGX), the exported static ONNX graph would be compiled directly to a **TensorRT FP16 engine** (target hardware latency to be profiled directly on the Jetson device via `trtexec`).
 
 ---
 
@@ -222,7 +220,7 @@ Benchmarks were conducted using 10 warmup iterations followed by 100 timed itera
 
 The selected checkpoint was exported to **ONNX (opset 12)** with graph simplification:
 ```bash
-python src/export_onnx.py --weights runs/detect/final/weights/best.pt --imgsz 800 --opset 12
+python src/export_onnx.py --weights runs/detect/baseline/weights/best.pt --imgsz 640 --opset 12
 ```
 
 ### Three-Tier Verification:
@@ -304,7 +302,7 @@ def resolve_traversal_state(detections, frame_history):
               ▼
 [Production Edge Deployment Path]
   ├── Edge Hardware: NVIDIA Jetson Orin Nano / Orin NX
-  ├── Compilation: TensorRT FP16 Engine (trtexec --onnx=best.onnx --fp16) -> ~5-10 ms
+  ├── Compilation: TensorRT FP16 Engine (trtexec --onnx=best.onnx --fp16)
   ├── Stream Preprocessing: 640×640 Letterboxing & Normalization
   ├── Post-Processing: Non-Maximum Suppression (IoU=0.45, Conf=0.25)
   └── Safety Filter: 3-frame consensus state resolver -> ROS2 Nav2 Costmap Layer
