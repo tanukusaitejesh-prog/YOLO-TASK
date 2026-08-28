@@ -1,0 +1,23 @@
+{
+  "runtime": "ONNXRuntime (FP32 Static Graph)",
+  "device": "cpu",
+  "mean_ms": 48.14,
+  "std_ms": 23.15,
+  "min_ms": 23.8,
+  "max_ms": 156.46,
+  "fps": 20.8,
+  "n_runs": 100,
+  "hardware": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.4",
+    "cpu": "Intel64 Family 6 Model 141 Stepping 1, GenuineIntel",
+    "torch": "2.5.1+cu121",
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "cuda": "12.1",
+    "onnxruntime": "1.29.0"
+  },
+  "imgsz": 640,
+  "warmup": 10,
+  "weights": "models/best.onnx"
+}

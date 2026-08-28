@@ -215,16 +215,17 @@ Benchmarks were conducted using 10 warmup iterations followed by 100 timed itera
 
 | Model Variant | Runtime / Engine | Input Resolution | Mean Latency (ms) | Throughput (FPS) | Execution Device |
 |---|---|---:|---:|---:|---|
+| `baseline` 🏆 | PyTorch CUDA (FP16) | 640×640 | 22.05 | ~45.3 | NVIDIA RTX 3050 Laptop GPU |
+| `best_onnx_cuda` | ONNXRuntime (CUDA EP) | 640×640 | 25.52 (P50: 20.2) | ~39.2 | NVIDIA RTX 3050 Laptop GPU |
 | `augmentation` | PyTorch CUDA (FP16) | 640×640 | 21.23 | ~47.1 | NVIDIA RTX 3050 Laptop GPU |
-| `baseline` | PyTorch CUDA (FP16) | 640×640 | 22.05 | ~45.3 | NVIDIA RTX 3050 Laptop GPU |
 | `final` | PyTorch CUDA (FP16) | 800×800 | 24.94 | ~40.1 | NVIDIA RTX 3050 Laptop GPU |
 | `high_resolution` | PyTorch CUDA (FP16) | 960×960 | 26.56 | ~37.6 | NVIDIA RTX 3050 Laptop GPU |
-| `best_onnx` | ONNXRuntime (FP32) | 640×640 | 73.66 | ~13.6 | Host CPU (Default EP) |
+| `best_onnx_cpu` | ONNXRuntime (CPU EP) | 640×640 | 73.66 | ~13.6 | Host CPU (Default EP) |
 
-> **Technical Note on ONNXRuntime Latency:**
-> - In this benchmark environment, ONNXRuntime executed on the **Host CPU** using the default CPUExecutionProvider. ONNXRuntime served primarily for **graph serialization integrity and output tensor validation**.
-> - The native PyTorch pipeline utilized the **NVIDIA RTX 3050 Laptop GPU in FP16 half-precision** ($22.05\text{ ms}$).
-> - For actual onboard AMR deployment on embedded hardware (e.g., NVIDIA Jetson Orin Nano / AGX), the exported static ONNX graph would be compiled directly to a **TensorRT FP16 engine** (target hardware latency to be profiled directly on the Jetson device via `trtexec`).
+> **Technical Note on Inference Latency & Runtimes:**
+> - **ONNX on CUDA (`CUDAExecutionProvider`):** Achieved **$25.52\text{ ms}$ mean** (median $20.24\text{ ms}$, $\sim 39.2\text{ FPS}$) on the NVIDIA RTX 3050 GPU, matching native PyTorch CUDA speeds ($22.05\text{ ms}$) within static graph execution.
+> - **ONNX on CPU (`CPUExecutionProvider`):** Executed at $73.66\text{ ms}$ on host CPU, validating cross-platform fallback compatibility.
+> - **Embedded Deployment Path:** For onboard AMR deployment on embedded hardware (e.g., NVIDIA Jetson Orin Nano / AGX), the exported ONNX graph would be compiled to a **TensorRT FP16 engine** (target hardware latency to be profiled directly on the Jetson device via `trtexec`).
 
 ---
 
