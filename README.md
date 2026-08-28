@@ -116,7 +116,7 @@ Each experiment changes one primary factor group relative to the baseline to ens
 - **Config:** `configs/high_resolution.yaml` (`imgsz: 960`, `batch: 8`). *Batch size was adjusted to 8 to accommodate GPU VRAM constraints at higher resolution.*
 
 ### Experiment 4 — Combined Candidate ($800\text{px}$)
-- **Architectural Rationale for 800px:** As an exploratory candidate, an intermediate input resolution ($800\times800$) was selected *a priori* as the midpoint between $640\text{px}$ and $960\text{px}$. The objective was to test whether scaling resolution moderately could capture fine visual cues without dropping the DataLoader batch size below 12 or exceeding the 30ms latency ceiling.
+- **Architectural Rationale for 800px:** As an exploratory candidate, an intermediate input resolution ($800\times800$) was selected *a priori* as the midpoint between $640\text{px}$ and $960\text{px}$. The objective was to test whether scaling resolution moderately could capture fine visual cues while keeping the batch size at 12 and remaining within the 30ms latency ceiling.
 - **Hypothesis:** Combining moderate photometric augmentations with an $800\text{px}$ input scale evaluates whether an intermediate resolution offers a superior trade-off between edge throughput and localization strictness compared to the $640\text{px}$ baseline.
 - **Config:** `configs/final.yaml` (`imgsz: 800`, `batch: 12`, selected augmentations).
 
@@ -203,7 +203,7 @@ Visual inspection of difficult and low-confidence test detections identifies fiv
 |---|---|---|---|
 | **Low Illumination / Backlighting** | Missed closed door in dim hallways or high-contrast backlighting | Low contrast between door panel and doorframe | Targeted contrast/illumination augmentations |
 | **Partial Occlusion** | False state prediction when obstacles partially cover the door | Foreground objects break continuous door panel edge geometry | Training images with realistic foreground occlusions |
-| **Small / Distant Door** | Lower detection confidence when door is viewed from far down a hallway | Object occupies a small proportion of the image frame | Higher input resolution ($800\text{px}$) or multi-scale inference |
+| **Small / Distant Door** | Lower detection confidence when door is viewed from far down a hallway | Object occupies a small proportion of the image frame | Re-evaluate input resolution under a deployment-specific latency/accuracy target, or investigate multi-scale inference |
 | **Glass / Specular Reflection** | Transparent or glossy doors misclassified | Specular reflections mimic open pathway geometry | Targeted collection and annotation of reflective doors |
 | **Ambiguous State (Ajar)** | Low confidence on doors open by only a slight angle | Subtle visual separation between door edge and jamb | Temporal smoothing over consecutive frames in video |
 
