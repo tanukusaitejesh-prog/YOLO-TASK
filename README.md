@@ -75,9 +75,6 @@ Rather than relying on a single narrow dataset, three public object-detection da
 | **test** | 281 | 178 | 103 | 281 | 1.0 |
 | **Total** | **2143** | **1282** | **861** | **2143** | **1.00** |
 
-*Note: The final dataset contains one annotated door instance per image (2,143 images = 2,143 instances). The dataset is characterized by single-door navigation scenarios rather than dense multi-object scenes.*
-
----
 
 ## 4. Deduplication Quality Audit
 
@@ -128,10 +125,11 @@ Each experiment changes one primary factor group relative to the baseline to ens
 
 | Candidate Experiment | Img Size | Key Change | Val Precision | Val Recall | Val F1 | Val mAP@0.5 | Val mAP@0.5:0.95 | Native Latency (ms) | FPS |
 |---|---:|---|---:|---:|---:|---:|---:|---:|---:|
-| Baseline | 640 | — | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| Augmentation | 640 | +aug | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| High Res | 960 | +res | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
-| Combined Candidate | 800 | +aug +res | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ | _fill_ |
+| Baseline | 640 | — | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 22.1 | ~45.3 |
+| Augmentation | 640 | +aug | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.2 | ~47.1 |
+| High Res | 960 | +res | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.6 | ~37.6 |
+| Combined Candidate | 800 | +aug +res | 0.9696 | 0.9673 | 0.9684 | 0.9844 | 0.8126 | 24.9 | ~40.1 |
+
 
 ### Selection Decision Rule
 The winning model is selected by evaluating validation F1 score alongside localization strictness ($mAP@0.5:0.95$) subject to an engineering latency target ($\le 30\,\text{ms}$). The full decision rationale is saved to `results/model_selection_decision.json`.
@@ -144,9 +142,8 @@ Following model selection on validation data, the winning model was evaluated **
 
 | Winning Model | Split | Precision | Recall | F1 Score | mAP@0.5 | mAP@0.5:0.95 |
 |---|---|---:|---:|---:|---:|---:|
-| **Combined Candidate** (`final`) | **Held-out Test** | **_fill_** | **_fill_** | **_fill_** | **_fill_** | **_fill_** |
+| **Baseline** (`baseline`) | **Held-out Test** | **0.9651** | **0.9442** | **0.9546** | **0.9780** | **0.8274** |
 
----
 
 ## 9. Observed Failure Modes & Error Analysis
 
@@ -170,13 +167,12 @@ Benchmarks were conducted using 10 warmup iterations followed by 100 timed itera
 
 | Model Variant | Runtime / Engine | Input Resolution | Mean Latency (ms) | Throughput (FPS) |
 |---|---|---:|---:|---:|
-| `baseline` | PyTorch CUDA (FP16) | 640×640 | _fill_ | _fill_ |
-| `augmentation` | PyTorch CUDA (FP16) | 640×640 | _fill_ | _fill_ |
-| `high_resolution` | PyTorch CUDA (FP16) | 960×960 | _fill_ | _fill_ |
-| `final` | PyTorch CUDA (FP16) | 800×800 | _fill_ | _fill_ |
-| `best_onnx` | ONNXRuntime (FP32) | 800×800 | _fill_ | _fill_ |
+| `augmentation` | PyTorch CUDA (FP16) | 640×640 | 21.23 | ~47.1 |
+| `baseline` | PyTorch CUDA (FP16) | 640×640 | 22.05 | ~45.3 |
+| `best_onnx` | ONNXRuntime | 640×640 | 73.66 | ~13.6 |
+| `final` | PyTorch CUDA (FP16) | 800×800 | 24.94 | ~40.1 |
+| `high_resolution` | PyTorch CUDA (FP16) | 960×960 | 26.56 | ~37.6 |
 
----
 
 ## 11. ONNX Export & Three-Tier Verification
 

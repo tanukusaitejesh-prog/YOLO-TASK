@@ -1,0 +1,83 @@
+{
+  "selection_split": "validation",
+  "primary_metric": "f1_score",
+  "secondary_metric": "map50_95",
+  "latency_target_ms": 30.0,
+  "selected_experiment": "baseline",
+  "selection_rationale": "Selected baseline: achieved highest validation F1 (0.9697) while satisfying the 30.0ms latency target (22.05ms).",
+  "validation_metrics": {
+    "baseline": {
+      "experiment": "baseline",
+      "split": "val",
+      "imgsz": 640,
+      "precision": 0.9704,
+      "recall": 0.969,
+      "f1": 0.9697,
+      "map50": 0.9757,
+      "map50_95": 0.8355,
+      "per_class": {
+        "door_open": {
+          "ap50": 0.9905
+        },
+        "door_closed": {
+          "ap50": 0.9608
+        }
+      }
+    },
+    "augmentation": {
+      "experiment": "augmentation",
+      "split": "val",
+      "imgsz": 640,
+      "precision": 0.9696,
+      "recall": 0.9645,
+      "f1": 0.967,
+      "map50": 0.9846,
+      "map50_95": 0.8197,
+      "per_class": {
+        "door_open": {
+          "ap50": 0.9901
+        },
+        "door_closed": {
+          "ap50": 0.979
+        }
+      }
+    },
+    "high_resolution": {
+      "experiment": "high_resolution",
+      "split": "val",
+      "imgsz": 960,
+      "precision": 0.9791,
+      "recall": 0.9468,
+      "f1": 0.9627,
+      "map50": 0.9865,
+      "map50_95": 0.8327,
+      "per_class": {
+        "door_open": {
+          "ap50": 0.9915
+        },
+        "door_closed": {
+          "ap50": 0.9815
+        }
+      }
+    },
+    "final": {
+      "experiment": "final",
+      "split": "val",
+      "imgsz": 800,
+      "precision": 0.9696,
+      "recall": 0.9673,
+      "f1": 0.9684,
+      "map50": 0.9844,
+      "map50_95": 0.8126,
+      "per_class": {
+        "door_open": {
+          "ap50": 0.9876
+        },
+        "door_closed": {
+          "ap50": 0.9811
+        }
+      }
+    }
+  },
+  "test_evaluated_after_selection": true
+}
