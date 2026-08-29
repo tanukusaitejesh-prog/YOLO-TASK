@@ -24,8 +24,7 @@ data/raw/
 *.engine
 *.trt
 
-# ── Results: commit CSV + JSON summaries, skip large image dumps ──
-results/predictions/
+# ── Results: commit CSV, JSON summaries & showcase predictions, skip large dumps ──
 results/failure_analysis/
 results/dataset_preview_*.jpg
 results/dedup_sample_audit.jpg

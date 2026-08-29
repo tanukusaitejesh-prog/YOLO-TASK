@@ -7,8 +7,8 @@ numpy>=1.26.0
 
 # ── ONNX runtime ──────────────────────────────────────────────────────────────
 onnx==1.16.1            # model structure validation
-onnxruntime==1.19.0     # CPU inference
-onnxruntime-gpu==1.19.0 # CUDA EP inference (optional; install this instead of onnxruntime for GPU benchmarking)
+onnxruntime==1.19.0     # CPU inference (for GPU: install onnxruntime-gpu==1.19.0 instead)
+# onnxruntime-gpu==1.19.0 # Optional: use for CUDA EP (do not install concurrently with onnxruntime)
 onnxsim                 # simplify ONNX graph (called via model.export(simplify=True))
 
 # ── Data / Analysis ───────────────────────────────────────────────────────────

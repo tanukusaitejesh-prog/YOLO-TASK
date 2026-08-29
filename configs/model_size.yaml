@@ -1,16 +1,16 @@
 # ─────────────────────────────────────────────────────────────
-# Experiment 6 — Model Size
+# Experiment 5 — Model Size
 #
 # Hypothesis:
 #   YOLOv8s (Small, 11.2M params / 28.6 GFLOPs) has a wider C2f
-#   backbone compared to YOLOv8n (3.2M params / 8.2 GFLOPs). The
+#   backbone compared to YOLOv8n (3.0M params / 8.2 GFLOPs). The
 #   richer feature representation should extract finer doorframe
 #   geometry and handle details, potentially raising mAP@0.5:0.95
 #   beyond the 0.8355 Baseline ceiling. We verify that latency
 #   remains under the <30ms hard deployment constraint.
 #
 # Changed vs Baseline (one factor group — model backbone only):
-#   model  yolov8n.pt → yolov8s.pt   ~3.5x more parameters
+#   model  yolov8n.pt → yolov8s.pt   ~3.7x more parameters
 #
 # Held constant vs Baseline:
 #   imgsz (640), batch (16), epochs (100), lr0 (0.01), lrf (0.01)

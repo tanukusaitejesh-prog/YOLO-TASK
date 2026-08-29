@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-# Experiment 5 — Learning Rate Schedule
+# Experiment 4 — Learning Rate Schedule
 #
 # Hypothesis:
 #   YOLOv8n is already pretrained on COCO. Starting with the default

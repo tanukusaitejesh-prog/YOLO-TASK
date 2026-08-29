@@ -20,15 +20,15 @@ Colour convention (consistent with robotics intent):
 Usage
 -----
     # Random sample from the test set
-    python src/visualize.py --weights runs/detect/final/weights/best.pt \
+    python src/visualize.py --weights runs/detect/lr_schedule/weights/best.pt \
         --source dataset/images/test
 
     # Specific image
-    python src/visualize.py --weights runs/detect/final/weights/best.pt \
+    python src/visualize.py --weights runs/detect/lr_schedule/weights/best.pt \
         --source path/to/image.jpg
 
     # Low-confidence detections (useful for failure analysis)
-    python src/visualize.py --weights runs/detect/final/weights/best.pt \
+    python src/visualize.py --weights runs/detect/lr_schedule/weights/best.pt \
         --source dataset/images/test --conf 0.20
 """
 
