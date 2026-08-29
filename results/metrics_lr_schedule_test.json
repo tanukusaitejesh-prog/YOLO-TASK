@@ -48,15 +48,15 @@
     ]
   },
   "safety_audit": {
-    "total_open_instances": 176,
+    "total_open_instances": 178,
     "open_pred_open": 167,
     "open_pred_closed_failsafe": 4,
-    "open_missed_bg": 5,
-    "total_closed_instances": 110,
+    "open_missed_bg": 7,
+    "total_closed_instances": 103,
     "closed_pred_closed": 98,
     "closed_pred_open_hazard": 4,
-    "closed_missed_bg": 8,
-    "hazard_rate_percent": 3.64,
-    "failsafe_rate_percent": 2.27
+    "closed_missed_bg": 1,
+    "hazard_rate_percent": 3.88,
+    "failsafe_rate_percent": 2.25
   }
 }

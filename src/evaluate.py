@@ -109,29 +109,31 @@ def evaluate(weights: str, split: str, imgsz: int) -> dict:
             "matrix": cm_matrix,
             "labels": ["door_open", "door_closed", "background"]
         }
-        # Explicit counts for robotics safety audit
-        if len(cm_matrix) >= 2 and len(cm_matrix[0]) >= 3:
-            # Row 0: True door_open -> [pred_open, pred_closed, missed_bg]
-            # Row 1: True door_closed -> [pred_open, pred_closed, missed_bg]
-            true_open_pred_open = int(cm_matrix[0][0])
-            true_open_pred_closed = int(cm_matrix[0][1])
-            true_open_missed = int(cm_matrix[0][2])
-            total_open = true_open_pred_open + true_open_pred_closed + true_open_missed
+        # Confusion Matrix convention in Ultralytics:
+        # matrix[row, col]: row = predicted class, col = true class
+        # Indices: 0: door_open, 1: door_closed, 2: background
+        if len(cm_matrix) >= 3 and len(cm_matrix[0]) >= 3:
+            # Column 0: True door_open (sum across rows = total true open)
+            true_open_pred_open       = int(cm_matrix[0][0])  # Pred Open, True Open
+            true_open_pred_closed     = int(cm_matrix[1][0])  # Pred Closed, True Open -> FAILSAFE PAUSE
+            true_open_missed_bg       = int(cm_matrix[2][0])  # Pred Background, True Open -> MISSED
+            total_open = true_open_pred_open + true_open_pred_closed + true_open_missed_bg
 
-            true_closed_pred_open = int(cm_matrix[1][0]) # SAFETY HAZARD
-            true_closed_pred_closed = int(cm_matrix[1][1])
-            true_closed_missed = int(cm_matrix[1][2])
-            total_closed = true_closed_pred_open + true_closed_pred_closed + true_closed_missed
+            # Column 1: True door_closed (sum across rows = total true closed)
+            true_closed_pred_open     = int(cm_matrix[0][1])  # Pred Open, True Closed -> SAFETY HAZARD
+            true_closed_pred_closed   = int(cm_matrix[1][1])  # Pred Closed, True Closed
+            true_closed_missed_bg     = int(cm_matrix[2][1])  # Pred Background, True Closed -> MISSED
+            total_closed = true_closed_pred_open + true_closed_pred_closed + true_closed_missed_bg
 
             result["safety_audit"] = {
                 "total_open_instances": total_open,
                 "open_pred_open": true_open_pred_open,
                 "open_pred_closed_failsafe": true_open_pred_closed,
-                "open_missed_bg": true_open_missed,
+                "open_missed_bg": true_open_missed_bg,
                 "total_closed_instances": total_closed,
                 "closed_pred_closed": true_closed_pred_closed,
                 "closed_pred_open_hazard": true_closed_pred_open,
-                "closed_missed_bg": true_closed_missed,
+                "closed_missed_bg": true_closed_missed_bg,
                 "hazard_rate_percent": round((true_closed_pred_open / total_closed * 100) if total_closed > 0 else 0.0, 2),
                 "failsafe_rate_percent": round((true_open_pred_closed / total_open * 100) if total_open > 0 else 0.0, 2)
             }
