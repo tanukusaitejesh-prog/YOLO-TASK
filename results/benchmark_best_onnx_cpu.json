@@ -1,11 +1,13 @@
 {
   "runtime": "ONNXRuntime (FP32 Static Graph)",
   "device": "cpu",
-  "mean_ms": 46.2,
-  "std_ms": 10.46,
-  "min_ms": 30.78,
-  "max_ms": 104.27,
-  "fps": 21.6,
+  "mean_ms": 51.64,
+  "std_ms": 18.04,
+  "min_ms": 33.17,
+  "max_ms": 153.66,
+  "p50_ms": 48.17,
+  "p95_ms": 78.68,
+  "fps": 19.4,
   "n_runs": 100,
   "hardware": {
     "os": "Windows-11-10.0.26200-SP0",

@@ -1,11 +1,13 @@
 {
   "runtime": "PyTorch FP16 (CUDA)",
   "device": "cuda:0",
-  "mean_ms": 14.0,
-  "std_ms": 3.85,
-  "min_ms": 10.71,
-  "max_ms": 31.93,
-  "fps": 71.4,
+  "mean_ms": 12.52,
+  "std_ms": 3.03,
+  "min_ms": 10.13,
+  "max_ms": 25.84,
+  "p50_ms": 11.22,
+  "p95_ms": 18.58,
+  "fps": 79.9,
   "n_runs": 100,
   "hardware": {
     "os": "Windows-11-10.0.26200-SP0",

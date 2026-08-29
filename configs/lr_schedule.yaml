@@ -23,10 +23,10 @@ experiment: lr_schedule
 # ── Model ─────────────────────────────────────────────────────
 model: yolov8n.pt
 
-# ── Training ──────────────────────────────────────────────────
 imgsz:          640
 epochs:         100
 batch:          16
+optimizer:      AdamW
 lr0:            0.001     # ← 10x lower initial LR (fine-tuning regime)
 lrf:            0.001     # ← cosine annealing floor
 momentum:       0.937

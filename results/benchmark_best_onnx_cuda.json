@@ -1,11 +1,13 @@
 {
   "runtime": "ONNXRuntime (FP32 Static Graph)",
   "device": "cuda",
-  "mean_ms": 6.8,
-  "std_ms": 1.73,
-  "min_ms": 5.9,
-  "max_ms": 15.97,
-  "fps": 147.0,
+  "mean_ms": 6.9,
+  "std_ms": 0.79,
+  "min_ms": 6.18,
+  "max_ms": 13.22,
+  "p50_ms": 6.77,
+  "p95_ms": 7.96,
+  "fps": 144.9,
   "n_runs": 100,
   "hardware": {
     "os": "Windows-11-10.0.26200-SP0",

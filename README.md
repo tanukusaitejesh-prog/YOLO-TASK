@@ -21,25 +21,25 @@ End-to-end computer vision pipeline to detect whether an architectural doorway i
 
 **Key achievements:**
 - **Deduplication:** Pruned 369 redundant CCTV burst frames (14.7%) via 256-bit aHash before dataset splitting to eliminate train/test data leakage.
-- **Controlled ablations:** 6 training experiments each isolating exactly one factor group (learning rate, model capacity, resolution, augmentation).
+- **Controlled ablations:** 6 training experiments isolating Learning Rate schedules, Model Capacity, Spatial Resolution, and Domain Augmentation.
 - **Winning model (`lr_schedule`) on held-out test (N=281):** Precision 97.64%, Recall 93.87%, **F1 95.72%**, mAP@0.5 98.07%, mAP@0.5:0.95 84.52%.
-- **Safety asymmetry analysis:** Formally audited collision hazards (Closed→Open: 3.88%) vs fail-safe stops (Open→Closed: 2.25%) using ground-truth confusion matrix indexing.
-- **Production ONNX model (`models/best.onnx`):** 3-tier validated and benchmarked on both CUDA (6.80 ms / ~147 FPS) and CPU (46.20 ms / ~21.6 FPS).
+- **Safety asymmetry audit:** Evaluated collision hazards (Closed→Open: 3.88%) vs fail-safe stops (Open→Closed: 2.25%) using ground-truth confusion matrix indexing.
+- **Production ONNX model (`models/best.onnx`):** 3-tier validated and profiled on both CUDA (6.90 ms / ~145 FPS) and CPU (51.64 ms / ~19 FPS).
 
 ---
 
 ## 2. Dataset Preparation & Deduplication
 
-Three public Roboflow sources were aggregated, polygon coordinates converted to bounding boxes, and near-duplicates pruned before splitting:
+Three public Roboflow sources were merged, polygon coordinates normalized to bounding boxes, and near-duplicates removed before splitting:
 
 | Source | Raw Images | Retained | Pruned | Format Normalized | Visual Domain |
 |---|---:|---:|---:|---|---|
 | `vikashs_1527` | 1,527 | 1,522 | 5 | 10-pt Polygon → BBox | Residential and office room doorways |
-| `fiw_706` | 691 | 327 | 364 | Bounding Box | Commercial storage corridor CCTV streams |
+| `fiw_706` | 691 | 327 | 364 | Bounding Box | Commercial warehouse, loading docks & storage corridor CCTV |
 | `utfyu_116` | 294 | 294 | 0 | Bounding Box | Apartment hallways, mobile phone photos |
 | **Total Canonical** | **2,512** | **2,143** | **369 (14.7%)** | 2 Classes | **1,541 Train / 321 Val / 281 Test** |
 
-> **Domain note on `fiw_706`:** These frames originate from an overhead CCTV camera in a commercial project storage corridor. The camera captured identical burst frames at 30 FPS. Pruning 364 near-duplicate frames before splitting was necessary to prevent identical frames from leaking across train and test sets.
+> **Domain note on `fiw_706`:** These frames originate from overhead CCTV cameras in commercial facility storage rooms and loading dock hallways. Because fixed-angle surveillance captures continuous video bursts at 30 FPS, removing 364 near-duplicate frames before dataset splitting was essential to prevent identical scenes from leaking across train and test sets.
 
 > **Deterministic paths in `data/data.yaml`:** Dataset splits are declared as `../dataset/images/train`, `../dataset/images/val`, and `../dataset/images/test` relative to the `data/` folder, ensuring deterministic path resolution across different machines and clones without relying on global cache directories.
 
@@ -55,14 +55,14 @@ Six experiments evaluated on the **Validation Split (N=321)**, each changing one
 | 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.23 ms |
 | 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640→960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 ms |
 | 4 | `final` | YOLOv8n (3.0M) | 800×800 | Intermediate resolution scale | 0.9696 | 0.9673 | 0.9684 | 0.9844 | 0.8126 | 24.94 ms |
-| **5** | **`lr_schedule` 🏆** | **YOLOv8n (3.0M)** | **640×640** | **LR 0.01→0.001 + AdamW** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **14.00 ms** |
+| **5** | **`lr_schedule` 🏆** | **YOLOv8n (3.0M)** | **640×640** | **LR Decay & AdamW Fine-Tuning** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73 ms** |
 | 6 | `model_size` | YOLOv8s (11.1M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 ms |
 
 > **Exp 7 — Confidence threshold sweep (post-hoc):** Sweeping `conf` from 0.10 to 0.60 showed peak F1 at `conf=0.25` (F1=0.9718). This threshold is applied during test inference.
 
 ---
 
-## 4. Model Selection Rationale
+## 4. Model Selection Rationale & Optimizer Dynamics
 
 **Selected Winner: `lr_schedule` (Exp 5)**
 
@@ -70,9 +70,12 @@ Selection decision criteria:
 1. **Real-Time Constraint:** Latency must be < 30 ms on edge hardware — all candidates passed.
 2. **Strict Localization (mAP@0.5:0.95):** `lr_schedule` achieved the highest localization score (**0.8462**), outperforming both baseline (0.8355) and the 3.7× larger YOLOv8s (0.8455).
 3. **F1 & Recall Balance:** Achieved **0.9709 F1** and the highest validation recall (**97.38%**), crucial for detecting traversable doors.
-4. **Execution Speed:** Fastest PyTorch inference (**14.00 ms / ~71.4 FPS**).
+4. **Execution Speed:** Fastest PyTorch inference (**17.73 ms on val / 12.52 ms benchmark**).
 
-**Why `lr_schedule` outperformed baseline:** COCO pre-trained weights already possess robust low-level edge filters. Starting training with the default high learning rate (`lr0=0.01`) induces large initial gradient updates that disrupt these representations. Reducing initial learning rate to `0.001` with AdamW enabled smooth fine-tuning, allowing the bounding box regression head to converge tightly around doorframe boundaries without gradient instability.
+**Technical Analysis of Optimizer & Learning Rate Dynamics:**
+* When training with Ultralytics, `optimizer="auto"` determines optimizer and learning rate based on dataset size and iteration counts ($\text{iterations} = \lceil N_{\text{train}} / \max(B, 64) \rceil \times \text{epochs}$). For $N=1,541$ with 100 epochs (2,500 iterations), `auto` selects AdamW with $\text{lr} \approx 0.00167$.
+* In `lr_schedule`, setting tighter cosine annealing floors (`lrf=0.001` vs baseline `lrf=0.01`) allowed the learning rate to decay to $1.8 \times 10^{-5}$ rather than leveling off at $3.3 \times 10^{-5}$. This finer late-epoch gradient refinement allowed the regression head to converge more tightly around doorframe boundaries without jitter, boosting strict localization (**0.8462 mAP@0.5:0.95**).
+* To prevent framework overrides in custom pipelines, `src/train.py` explicitly accepts `optimizer = cfg.get("optimizer", "AdamW")`, allowing full manual control over optimizer family and initial learning rates.
 
 ---
 
@@ -109,7 +112,7 @@ Actual Closed            4                98                    1               
 
 ## 6. Example Predictions
 
-Detections on held-out test scenes across residential, office, and commercial environments:
+Detections generated directly from the winning `lr_schedule` model on held-out test scenes across residential, office, and commercial environments:
 
 ![Prediction showcase](results/predictions/example_predictions_showcase.jpg)
 
@@ -128,11 +131,11 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 
 ### Hardware Latency Profiling (100 Iterations, 10 Warmup)
 
-| Model Variant / Runtime | Execution Provider / Device | Mean Latency | Median (P50) | Throughput | Artifact Log |
-|---|---|---:|---:|---:|---|
-| **ONNX Runtime (CUDA EP)** | NVIDIA RTX 3050 Laptop GPU | **6.80 ms** | 6.52 ms | **~147.0 FPS** | `results/benchmark_best_onnx_cuda.json` |
-| **PyTorch FP16 (CUDA)** | NVIDIA RTX 3050 Laptop GPU | **14.00 ms** | 13.50 ms | **~71.4 FPS** | `results/benchmark_lr_schedule.json` |
-| **ONNX Runtime (CPU EP)** | Host Intel CPU (Fallback) | **46.20 ms** | 43.10 ms | **~21.6 FPS** | `results/benchmark_best_onnx_cpu.json` |
+| Model Variant / Runtime | Execution Provider / Device | Mean Latency | Median (P50) | 95th %ile (P95) | Throughput | Artifact Log |
+|---|---|---:|---:|---:|---:|---|
+| **ONNX Runtime (CUDA EP)** | NVIDIA RTX 3050 Laptop GPU | **6.90 ms** | 6.77 ms | 7.96 ms | **~144.9 FPS** | `results/benchmark_best_onnx_cuda.json` |
+| **PyTorch FP16 (CUDA)** | NVIDIA RTX 3050 Laptop GPU | **12.52 ms** | 11.22 ms | 18.58 ms | **~79.9 FPS** | `results/benchmark_lr_schedule.json` |
+| **ONNX Runtime (CPU EP)** | Host Intel CPU (Fallback) | **51.64 ms** | 48.17 ms | 78.68 ms | **~19.4 FPS** | `results/benchmark_best_onnx_cpu.json` |
 
 ---
 

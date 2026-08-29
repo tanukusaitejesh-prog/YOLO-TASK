@@ -132,12 +132,15 @@ def _report(latencies: list, runtime: str, device: str) -> dict:
         "std_ms"   : round(float(arr.std()),  2),
         "min_ms"   : round(float(arr.min()),  2),
         "max_ms"   : round(float(arr.max()),  2),
+        "p50_ms"   : round(float(np.percentile(arr, 50)), 2),
+        "p95_ms"   : round(float(np.percentile(arr, 95)), 2),
         "fps"      : round(1000.0 / float(arr.mean()), 1),
         "n_runs"   : len(latencies),
     }
     print(f"\n  {'─'*45}")
     print(f"  Runtime  : {runtime}  |  Device: {device}")
     print(f"  Mean     : {result['mean_ms']:.2f} ms  ±  {result['std_ms']:.2f} ms")
+    print(f"  P50 / P95: {result['p50_ms']:.2f} ms  /  {result['p95_ms']:.2f} ms")
     print(f"  FPS      : ~{result['fps']:.1f}")
     print(f"  {'─'*45}\n")
     return result

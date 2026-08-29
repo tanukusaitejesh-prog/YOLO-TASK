@@ -67,6 +67,7 @@ def train(experiment: str, resume: bool = False) -> None:
             epochs      = cfg["epochs"],
             imgsz       = cfg["imgsz"],
             batch       = cfg["batch"],
+            optimizer   = cfg.get("optimizer",    "auto"),
             lr0         = cfg.get("lr0",           0.01),
             lrf         = cfg.get("lrf",           0.01),
             momentum    = cfg.get("momentum",      0.937),
