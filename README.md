@@ -54,9 +54,9 @@ Six experiments evaluated on the **Validation Split (N=321)**, each changing one
 | 1 | `baseline` | YOLOv8n (3.0M) | 640×640 | Reference (COCO defaults) | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 22.05 ms |
 | 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.23 ms |
 | 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640→960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 ms |
-| 4 | `final` | YOLOv8n (3.0M) | 800×800 | Intermediate resolution scale | 0.9696 | 0.9673 | 0.9684 | 0.9844 | 0.8126 | 24.94 ms |
+| 4 | `final` | YOLOv8n (3.0M) | 800×800 | Combined: 800px resolution + Exp2 augmentation | 0.9696 | 0.9673 | 0.9684 | 0.9844 | 0.8126 | 24.94 ms |
 | **5** | **`lr_schedule` 🏆** | **YOLOv8n (3.0M)** | **640×640** | **LR Decay & AdamW Fine-Tuning** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73 ms** |
-| 6 | `model_size` | YOLOv8s (11.1M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 ms |
+| 6 | `model_size` | YOLOv8s (11.2M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 ms |
 
 > **Exp 7 — Confidence threshold sweep (post-hoc):** Sweeping `conf` from 0.10 to 0.60 showed peak F1 at `conf=0.25` (F1=0.9718). This threshold is applied during test inference.
 
@@ -75,7 +75,7 @@ Selection decision criteria:
 **Technical Analysis of Optimizer & Learning Rate Dynamics:**
 * When training with Ultralytics, `optimizer="auto"` determines optimizer and learning rate based on dataset size and iteration counts ($\text{iterations} = \lceil N_{\text{train}} / \max(B, 64) \rceil \times \text{epochs}$). For $N=1,541$ with 100 epochs (2,500 iterations), `auto` selects AdamW with $\text{lr} \approx 0.00167$.
 * In `lr_schedule`, setting tighter cosine annealing floors (`lrf=0.001` vs baseline `lrf=0.01`) allowed the learning rate to decay to $1.8 \times 10^{-5}$ rather than leveling off at $3.3 \times 10^{-5}$. This finer late-epoch gradient refinement allowed the regression head to converge more tightly around doorframe boundaries without jitter, boosting strict localization (**0.8462 mAP@0.5:0.95**).
-* To prevent framework overrides in custom pipelines, `src/train.py` explicitly accepts `optimizer = cfg.get("optimizer", "AdamW")`, allowing full manual control over optimizer family and initial learning rates.
+* `src/train.py` passes `optimizer = cfg.get("optimizer", "auto")` to Ultralytics. Only `lr_schedule` explicitly sets `optimizer: AdamW` in its config — all other experiments fall through to `"auto"`, which Ultralytics resolves to AdamW for this dataset size. This design means experiments without an explicit config key get framework-selected defaults, while `lr_schedule` gets full manual control over optimizer family.
 
 ---
 

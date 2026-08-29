@@ -1,4 +1,4 @@
-﻿# ─────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────
 # Experiment 1 — Baseline
 #
 # Hypothesis:
@@ -22,6 +22,8 @@ model: yolov8n.pt
 imgsz:          640
 epochs:         100
 batch:          16
+# optimizer not set — train.py defaults to "auto", which Ultralytics resolves to
+# AdamW (lr≈0.00167) for datasets with <10,000 training iterations (see Section 4 of README)
 lr0:            0.01
 lrf:            0.01
 momentum:       0.937

@@ -13,9 +13,10 @@
 # Changed vs Baseline:
 #   imgsz   640 → 960
 #   batch    16 → 8     (memory constraint at higher resolution)
+#   mosaic  1.0 → 0.0   (disabled — 960px mosaic requires 1920×1920×3 RAM, OOMs on RTX 3050 4GB)
 #
 # Held constant vs Baseline:
-#   model, epochs, all LR params, augmentation, seed
+#   model, epochs, all LR params, seed
 # ─────────────────────────────────────────────────────────────
 
 experiment: high_resolution
