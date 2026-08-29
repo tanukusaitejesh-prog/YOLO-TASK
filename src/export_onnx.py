@@ -15,10 +15,11 @@ Why ONNX?
     (NVIDIA Jetson, data-centre GPU), or OpenVINO (Intel edge devices) —
     without rewriting any training code.
 
-This script exports, then validates with three checks:
+This script exports, then validates with four checks:
     1. ONNX model structure passes onnx.checker
     2. ONNXRuntime can load and execute the model
     3. A sample input produces output with the expected shape
+    4. Numerical output parity between PyTorch and ONNXRuntime (np.allclose)
 
 Usage
 -----
@@ -123,7 +124,7 @@ def export_and_validate(weights: str, imgsz: int, opset: int) -> None:
     if is_close:
         print(f"  ✓  Numerical parity confirmed (np.allclose atol=1e-3, rtol=1e-3)\n")
     else:
-        print(f"  ✓  Tensor parity verified (max delta: {max_diff:.2e})\n")
+        print(f"  ⚠  WARNING: Numerical discrepancy detected! Max delta ({max_diff:.2e}) exceeds tolerance (1e-3)\n")
 
     print(f"{'='*55}")
     print(f"  Export done.  Deliver: models/best.pt  +  models/best.onnx")
