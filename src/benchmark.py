@@ -7,7 +7,7 @@ if hasattr(sys.stdout, 'reconfigure'):
         pass
 
 """
-benchmark.py — Profile inference latency and FPS for PyTorch (FP16/CUDA) & ONNX.
+benchmark.py — Profile inference latency and FPS for PyTorch (FP16/CUDA) & ONNX (CUDA/CPU).
 """
 
 import argparse
@@ -48,50 +48,68 @@ def hardware_info() -> dict:
     return info
 
 
-def benchmark_pytorch(weights: str, imgsz: int, warmup: int, n_runs: int) -> dict:
+def benchmark_pytorch(weights: str, imgsz: int, warmup: int, n_runs: int, device: str = "auto") -> dict:
     from ultralytics import YOLO
     import torch
 
     model  = YOLO(weights)
-    use_cuda = torch.cuda.is_available()
-    device = "cuda:0" if use_cuda else "cpu"
-    precision = "FP16 (CUDA)" if use_cuda else "FP32 (CPU)"
+    if device == "cpu":
+        use_cuda = False
+        dev_str = "cpu"
+        precision = "FP32 (CPU)"
+    elif device == "cuda":
+        use_cuda = True
+        dev_str = "cuda:0"
+        precision = "FP16 (CUDA)"
+    else:
+        use_cuda = torch.cuda.is_available()
+        dev_str = "cuda:0" if use_cuda else "cpu"
+        precision = "FP16 (CUDA)" if use_cuda else "FP32 (CPU)"
 
     dummy = np.random.randint(0, 255, (imgsz, imgsz, 3), dtype=np.uint8)
 
-    print(f"  Warming up ({warmup} runs on {device} with {precision})…", flush=True)
+    print(f"  Warming up ({warmup} runs on {dev_str} with {precision})…", flush=True)
     for _ in range(warmup):
-        model.predict(dummy, verbose=False, imgsz=imgsz, half=use_cuda, device=device)
+        model.predict(dummy, verbose=False, imgsz=imgsz, half=use_cuda, device=dev_str)
 
     print(f"  Benchmarking ({n_runs} runs)…", flush=True)
     latencies = []
     for _ in range(n_runs):
         t0 = time.perf_counter()
-        model.predict(dummy, verbose=False, imgsz=imgsz, half=use_cuda, device=device)
+        model.predict(dummy, verbose=False, imgsz=imgsz, half=use_cuda, device=dev_str)
         latencies.append((time.perf_counter() - t0) * 1000)
 
-    return _report(latencies, runtime=f"PyTorch {precision}", device=device)
+    return _report(latencies, runtime=f"PyTorch {precision}", device=dev_str)
 
 
-def benchmark_onnx(weights: str, imgsz: int, warmup: int, n_runs: int) -> dict:
+def benchmark_onnx(weights: str, imgsz: int, warmup: int, n_runs: int, device: str = "auto") -> dict:
     import onnxruntime as ort
 
     opts = ort.SessionOptions()
     opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
     available_eps = ort.get_available_providers()
-    providers = (
-        ["CUDAExecutionProvider", "CPUExecutionProvider"]
-        if "CUDAExecutionProvider" in available_eps
-        else ["CPUExecutionProvider"]
-    )
+    if device == "cpu":
+        providers = ["CPUExecutionProvider"]
+    elif device == "cuda":
+        if "CUDAExecutionProvider" not in available_eps:
+            raise RuntimeError(f"CUDAExecutionProvider not available. Found: {available_eps}")
+        providers = ["CUDAExecutionProvider"]
+    else:
+        providers = (
+            ["CUDAExecutionProvider", "CPUExecutionProvider"]
+            if "CUDAExecutionProvider" in available_eps
+            else ["CPUExecutionProvider"]
+        )
+
     session = ort.InferenceSession(weights, opts, providers=providers)
+    active_providers = session.get_providers()
+    actual_device = "cuda" if "CUDAExecutionProvider" in active_providers else "cpu"
 
     input_name = session.get_inputs()[0].name
     dummy = np.random.rand(1, 3, imgsz, imgsz).astype(np.float32)
 
-    device = "cuda" if "CUDAExecutionProvider" in session.get_providers() else "cpu"
-    print(f"  Warming up ({warmup} runs on {device})…", flush=True)
+    print(f"  Warming up ({warmup} runs on {actual_device} EP)…", flush=True)
     for _ in range(warmup):
         session.run(None, {input_name: dummy})
 
@@ -102,7 +120,7 @@ def benchmark_onnx(weights: str, imgsz: int, warmup: int, n_runs: int) -> dict:
         session.run(None, {input_name: dummy})
         latencies.append((time.perf_counter() - t0) * 1000)
 
-    return _report(latencies, runtime="ONNXRuntime (FP32 Static Graph)", device=device)
+    return _report(latencies, runtime="ONNXRuntime (FP32 Static Graph)", device=actual_device)
 
 
 def _report(latencies: list, runtime: str, device: str) -> dict:
@@ -129,6 +147,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Benchmark inference latency.")
     parser.add_argument("--weights",    required=True)
     parser.add_argument("--model-type", default="pytorch", choices=["pytorch", "onnx"])
+    parser.add_argument("--device",     default="auto",    choices=["auto", "cuda", "cpu"])
     parser.add_argument("--imgsz",      type=int, default=640)
     parser.add_argument("--warmup",     type=int, default=10)
     parser.add_argument("--runs",       type=int, default=100)
@@ -137,9 +156,9 @@ def main() -> None:
 
     hw = hardware_info()
     if args.model_type == "onnx":
-        result = benchmark_onnx(args.weights, args.imgsz, args.warmup, args.runs)
+        result = benchmark_onnx(args.weights, args.imgsz, args.warmup, args.runs, args.device)
     else:
-        result = benchmark_pytorch(args.weights, args.imgsz, args.warmup, args.runs)
+        result = benchmark_pytorch(args.weights, args.imgsz, args.warmup, args.runs, args.device)
 
     result["hardware"] = hw
     result["imgsz"]    = args.imgsz

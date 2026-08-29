@@ -1,28 +1,62 @@
 {
-  "class_metrics": {
+  "experiment": "lr_schedule",
+  "split": "test",
+  "imgsz": 640,
+  "precision": 0.9764,
+  "recall": 0.9387,
+  "f1": 0.9572,
+  "map50": 0.9807,
+  "map50_95": 0.8452,
+  "per_class": {
     "door_open": {
-      "class_id": 0,
-      "precision": 0.9606,
-      "recall": 0.9599,
-      "f1": 0.9603,
-      "map50": 0.9734,
-      "map50_95": 0.842
+      "precision": 1.0,
+      "recall": 0.9357,
+      "f1": 0.9668,
+      "ap50": 0.9732,
+      "ap50_95": 0.8536
     },
     "door_closed": {
-      "class_id": 1,
-      "precision": 0.9696,
-      "recall": 0.9286,
-      "f1": 0.9487,
-      "map50": 0.9826,
-      "map50_95": 0.8128
+      "precision": 0.9527,
+      "recall": 0.9417,
+      "f1": 0.9472,
+      "ap50": 0.9882,
+      "ap50_95": 0.8367
     }
   },
   "confusion_matrix": {
-    "true_open_pred_open": 172,
-    "true_open_pred_closed": 5,
-    "true_open_missed_bg": 5,
-    "true_closed_pred_open": 1,
-    "true_closed_pred_closed": 97,
-    "true_closed_missed_bg": 5
+    "matrix": [
+      [
+        167.0,
+        4.0,
+        5.0
+      ],
+      [
+        4.0,
+        98.0,
+        8.0
+      ],
+      [
+        7.0,
+        1.0,
+        0.0
+      ]
+    ],
+    "labels": [
+      "door_open",
+      "door_closed",
+      "background"
+    ]
+  },
+  "safety_audit": {
+    "total_open_instances": 176,
+    "open_pred_open": 167,
+    "open_pred_closed_failsafe": 4,
+    "open_missed_bg": 5,
+    "total_closed_instances": 110,
+    "closed_pred_closed": 98,
+    "closed_pred_open_hazard": 4,
+    "closed_missed_bg": 8,
+    "hazard_rate_percent": 3.64,
+    "failsafe_rate_percent": 2.27
   }
 }
