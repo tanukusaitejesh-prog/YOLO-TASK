@@ -91,7 +91,7 @@ def train(experiment: str, resume: bool = False) -> None:
             project     = str(PROJECT_ROOT / "runs" / "detect"),
             name        = experiment,
             exist_ok    = True,
-            device      = 0,
+            device      = 0 if __import__("torch").cuda.is_available() else "cpu",
             workers     = 2,
             verbose     = True,
         )

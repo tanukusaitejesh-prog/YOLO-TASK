@@ -1,0 +1,18 @@
+{
+  "experiment": "lr_schedule",
+  "split": "test",
+  "imgsz": 640,
+  "precision": 0.9764,
+  "recall": 0.9387,
+  "f1": 0.9572,
+  "map50": 0.9807,
+  "map50_95": 0.8452,
+  "per_class": {
+    "door_open": {
+      "ap50": 0.9732
+    },
+    "door_closed": {
+      "ap50": 0.9882
+    }
+  }
+}

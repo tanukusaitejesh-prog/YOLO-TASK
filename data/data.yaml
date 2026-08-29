@@ -3,7 +3,7 @@
 # Dataset configuration for Ultralytics YOLO
 # ─────────────────────────────────────────────────────────────
 
-path: C:/Users/saite/OneDrive/Desktop/SwiftR/dataset
+path: dataset  # relative to repo root; set to absolute path or env var if needed
 
 train: images/train
 val:   images/val
