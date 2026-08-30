@@ -127,9 +127,11 @@ Actual Closed            4                98                    1               
 
 ---
 
-## 6. Example Predictions
+## 6. Example Predictions & Live Inference Demo
 
 Detections generated directly from the winning `lr_schedule` model on held-out test scenes across residential, office, and commercial environments:
+
+![Live inference demo](results/predictions/inference_demo.gif)
 
 ![Prediction showcase](results/predictions/example_predictions_showcase.jpg)
 
@@ -158,7 +160,22 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 
 ---
 
-## 8. Failure Modes & Mitigations
+## 8. Failure Modes, Robustness & Deployment Recommendation
+
+### Empirical Robustness Evaluation under Visual Corruptions (N=281 Test Set)
+
+Evaluated via [`src/robustness_eval.py`](src/robustness_eval.py) across simulated deployment degradations:
+
+| Deployment Condition / Perturbation | Precision | Recall | **F1 Score** | Delta vs Clean | Primary Visual Impact |
+|---|---:|---:|---:|---:|---|
+| **Normal (Clean Held-Out Test)** | 96.4% | 96.1% | **96.3%** | — | Nominal benchmark reference |
+| **Low Light (Gamma 2.2 Dimming)** | 92.6% | 93.6% | **93.1%** | -3.2% | Dark door leaves slightly blend into dim doorframes |
+| **Partial Occlusion (25% Center Cutout)** | 91.9% | 89.0% | **90.4%** | -5.9% | Passing carts or pedestrians partially covering edges |
+| **Motion Blur (15px Linear Camera Shake)** | 83.4% | 60.9% | **70.4%** | -25.9% | High-velocity robot vibration blurs thin frame boundaries |
+
+*Full evaluation records logged in [`results/robustness_report.json`](results/robustness_report.json).*
+
+### Failure Mode Mitigations
 
 | Failure Mode | Visual Signature | Root Cause | Engineering Mitigation |
 |---|---|---|---|
@@ -167,6 +184,11 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **Glass / Specular Reflection** | Closed glass door misidentified | Frame-only visual feature ambiguity | Cross-validate with 2D LiDAR / depth point cloud |
 | **Ajar Door (5 deg - 15 deg)** | Ambiguous state | Narrow visual opening gap | Calculate metric aperture width via RGB-D sensor |
 | **Small / Distant Door (>10m)** | Low confidence score | Bounding box occupies <2% of sensor | Adaptive Region-of-Interest (ROI) digital crop |
+
+### Production Deployment Recommendation
+- **Model & Runtime:** `YOLOv8n (lr_schedule)` exported to **ONNX (Opset 12)** with TensorRT or CUDA Execution Provider.
+- **Operating Point:** `conf=0.25`, `iou=0.45` (validated peak F1 operating threshold).
+- **Safety Consensus Filter:** Require **3 consecutive agreeing frames** before dispatching dynamic traversability updates to the Nav2 local costmap, effectively eliminating transient Closed -> Open collision hazards.
 
 ---
 
@@ -181,8 +203,9 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **3. Hyperparameter experiment results** | [`results/experiment_results.csv`](results/experiment_results.csv) | Centralized table of 5 controlled ablations + held-out test + confidence sweep |
 | **3a. Confidence threshold sweep** | [`results/conf_threshold_sweep.json`](results/conf_threshold_sweep.json) | 6-point P/R/F1 sweep on the deployed lr_schedule model (conf 0.10 to 0.60) |
 | **3b. 5-model hardware benchmark** | [`results/experiment_benchmarks.json`](results/experiment_benchmarks.json) | 100-run GPU (FP16) & CPU (FP32) latency profiles across all 5 model checkpoints |
+| **3c. Robustness evaluation script & data** | [`src/robustness_eval.py`](src/robustness_eval.py), [`results/robustness_report.json`](results/robustness_report.json) | Empirical testing across Low Light, Motion Blur, and Partial Occlusion |
 | **4. Best model metrics** | [`results/test_class_metrics.json`](results/test_class_metrics.json) | Per-class P/R/F1/AP breakdown, 3x3 confusion matrix & safety audit metrics |
-| **5. 3-5 example predictions** | [`results/predictions/`](results/predictions/) | 6 individual test scene predictions + 1 master showcase montage with green/red badges |
+| **5. 3-5 example predictions** | [`results/predictions/`](results/predictions/) | 6 individual test scene predictions + 1 master showcase montage + animated GIF demo |
 | **6. ONNX model** | [`models/best.onnx`](models/best.onnx) | 12.3 MB Opset 12 static model with verified numerical tensor parity |
 | **7. Short README.md** | [`README.md`](README.md) | Structured technical evaluation report covering methodology, trade-offs & results |
 

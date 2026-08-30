@@ -1,0 +1,38 @@
+[
+  {
+    "condition": "Normal (Clean Held-Out Test)",
+    "precision": 0.9643,
+    "recall": 0.9609,
+    "f1": 0.9626,
+    "tp": 270,
+    "fp": 10,
+    "fn": 11
+  },
+  {
+    "condition": "Low Light (Gamma 2.2 Dimming)",
+    "precision": 0.9261,
+    "recall": 0.9359,
+    "f1": 0.931,
+    "tp": 263,
+    "fp": 21,
+    "fn": 18
+  },
+  {
+    "condition": "Motion Blur (15px Linear Shake)",
+    "precision": 0.8341,
+    "recall": 0.6085,
+    "f1": 0.7037,
+    "tp": 171,
+    "fp": 34,
+    "fn": 110
+  },
+  {
+    "condition": "Partial Occlusion (25% Center Mask)",
+    "precision": 0.9191,
+    "recall": 0.8897,
+    "f1": 0.9042,
+    "tp": 250,
+    "fp": 22,
+    "fn": 31
+  }
+]
