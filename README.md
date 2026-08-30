@@ -126,7 +126,7 @@ Actual Closed            4                98                    1               
 > * **False Traversability Hazard (Actual Closed -> Predicted Open):** Occurred in **4 out of 103 closed doors (3.88%)**. Predicting a closed door as open creates a collision hazard.
 > * **Fail-Safe Pause (Actual Open -> Predicted Closed):** Occurred in **4 out of 178 open doors (2.25%)**. This error causes the robot to momentarily pause or re-route, representing a safe failure mode.
 > * **Missed Detections (Background):** 7 open doors (3.93%) and 1 closed door (0.97%) had no overlapping prediction above threshold.
-> * **Proposed Deployment Mitigation:** In a live ROS2/Nav2 navigation stack, an upstream 3-frame temporal consensus filter is recommended before dispatching clear footprint commands to Nav2, suppressing transient single-frame Closed -> Open false traversability hazards.
+> * **Robotics Deployment Mitigation:** In a live ROS2/Nav2 navigation stack, an upstream 3-frame temporal consensus filter (implemented in [`src/temporal_filter.py`](src/temporal_filter.py)) suppresses transient single-frame Closed -> Open false traversability hazards.
 
 ---
 
@@ -191,7 +191,7 @@ Evaluated via [`src/robustness_eval.py`](src/robustness_eval.py) using strict sp
 ### Production Deployment Recommendation
 - **Model & Runtime:** `YOLOv8n (lr_schedule)` exported to **ONNX (Opset 12)** with TensorRT or CUDA Execution Provider.
 - **Operating Point:** `conf=0.25`, `iou=0.45` (validated peak F1 operating threshold).
-- **Proposed Safety Consensus Policy:** Require **3 consecutive agreeing frames** before dispatching dynamic traversability updates to the Nav2 local costmap, effectively eliminating transient Closed -> Open collision hazards.
+- **Safety Consensus Filter:** Implement the 3-frame temporal consensus policy in [`src/temporal_filter.py`](src/temporal_filter.py) requiring 3 consecutive agreeing frames before updating the Nav2 local costmap, effectively eliminating transient Closed -> Open collision hazards.
 
 ---
 
@@ -206,7 +206,8 @@ Evaluated via [`src/robustness_eval.py`](src/robustness_eval.py) using strict sp
 | **3. Hyperparameter experiment results** | [`results/experiment_results.csv`](results/experiment_results.csv) | Centralized table of 5 controlled ablations + held-out test + confidence sweep |
 | **3a. Confidence threshold sweep** | [`results/conf_threshold_sweep.json`](results/conf_threshold_sweep.json) | 6-point P/R/F1 sweep on the deployed lr_schedule model (conf 0.10 to 0.60) |
 | **3b. 5-model hardware benchmark** | [`results/experiment_benchmarks.json`](results/experiment_benchmarks.json) | 100-run GPU (FP16) & CPU (FP32) latency profiles across all 5 model checkpoints |
-| **3c. Robustness evaluation script & data** | [`src/robustness_eval.py`](src/robustness_eval.py), [`results/robustness_report.json`](results/robustness_report.json) | Empirical testing across Low Light, Motion Blur, and Partial Occlusion |
+| **3c. Robustness evaluation suite** | [`src/robustness_eval.py`](src/robustness_eval.py), [`results/robustness_report.json`](results/robustness_report.json) | Empirical testing across Low Light, Motion Blur, and Partial Occlusion |
+| **3d. Temporal safety consensus filter** | [`src/temporal_filter.py`](src/temporal_filter.py) | Standalone 3-frame temporal filter with unit test suite for Nav2 integration |
 | **4. Best model metrics** | [`results/test_class_metrics.json`](results/test_class_metrics.json) | Per-class P/R/F1/AP breakdown, 3x3 confusion matrix & safety audit metrics |
 | **5. 3-5 example predictions** | [`results/predictions/`](results/predictions/) | 6 individual test scene predictions + 1 master showcase montage + animated GIF demo |
 | **6. ONNX model** | [`models/best.onnx`](models/best.onnx) | 12.3 MB Opset 12 static model with verified numerical tensor parity |
