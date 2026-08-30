@@ -1,38 +1,42 @@
 [
   {
     "condition": "Normal (Clean Held-Out Test)",
-    "precision": 0.9643,
-    "recall": 0.9609,
-    "f1": 0.9626,
-    "tp": 270,
-    "fp": 10,
-    "fn": 11
+    "precision": 0.9536,
+    "recall": 0.9502,
+    "f1": 0.9519,
+    "tp": 267,
+    "fp": 13,
+    "fn": 14,
+    "eval_protocol": "Spatial IoU >= 0.50, conf = 0.25, imgsz = 640"
   },
   {
     "condition": "Low Light (Gamma 2.2 Dimming)",
-    "precision": 0.9261,
-    "recall": 0.9359,
-    "f1": 0.931,
-    "tp": 263,
-    "fp": 21,
-    "fn": 18
+    "precision": 0.912,
+    "recall": 0.9217,
+    "f1": 0.9168,
+    "tp": 259,
+    "fp": 25,
+    "fn": 22,
+    "eval_protocol": "Spatial IoU >= 0.50, conf = 0.25, imgsz = 640"
   },
   {
     "condition": "Motion Blur (15px Linear Shake)",
-    "precision": 0.8341,
-    "recall": 0.6085,
-    "f1": 0.7037,
-    "tp": 171,
-    "fp": 34,
-    "fn": 110
+    "precision": 0.7659,
+    "recall": 0.5587,
+    "f1": 0.6461,
+    "tp": 157,
+    "fp": 48,
+    "fn": 124,
+    "eval_protocol": "Spatial IoU >= 0.50, conf = 0.25, imgsz = 640"
   },
   {
     "condition": "Partial Occlusion (25% Center Mask)",
-    "precision": 0.9191,
-    "recall": 0.8897,
-    "f1": 0.9042,
-    "tp": 250,
-    "fp": 22,
-    "fn": 31
+    "precision": 0.8272,
+    "recall": 0.8007,
+    "f1": 0.8137,
+    "tp": 225,
+    "fp": 47,
+    "fn": 56,
+    "eval_protocol": "Spatial IoU >= 0.50, conf = 0.25, imgsz = 640"
   }
 ]

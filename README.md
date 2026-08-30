@@ -164,14 +164,14 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 
 ### Empirical Robustness Evaluation under Visual Corruptions (N=281 Test Set)
 
-Evaluated via [`src/robustness_eval.py`](src/robustness_eval.py) across simulated deployment degradations:
+Evaluated via [`src/robustness_eval.py`](src/robustness_eval.py) using strict spatial bounding box matching ($\text{IoU} \ge 0.50$, $\text{conf}=0.25$, $\text{imgsz}=640$) across simulated deployment degradations:
 
 | Deployment Condition / Perturbation | Precision | Recall | **F1 Score** | Delta vs Clean | Primary Visual Impact |
 |---|---:|---:|---:|---:|---|
-| **Normal (Clean Held-Out Test)** | 96.4% | 96.1% | **96.3%** | — | Nominal benchmark reference |
-| **Low Light (Gamma 2.2 Dimming)** | 92.6% | 93.6% | **93.1%** | -3.2% | Dark door leaves slightly blend into dim doorframes |
-| **Partial Occlusion (25% Center Cutout)** | 91.9% | 89.0% | **90.4%** | -5.9% | Passing carts or pedestrians partially covering edges |
-| **Motion Blur (15px Linear Camera Shake)** | 83.4% | 60.9% | **70.4%** | -25.9% | High-velocity robot vibration blurs thin frame boundaries |
+| **Normal (Clean Held-Out Test)** | 95.4% | 95.0% | **95.2%** | — | Nominal benchmark reference (spatial IoU $\ge 0.50$) |
+| **Low Light (Gamma 2.2 Dimming)** | 91.2% | 92.2% | **91.7%** | -3.5% | Dark door leaves slightly blend into dim doorframes |
+| **Partial Occlusion (25% Center Cutout)** | 82.7% | 80.1% | **81.4%** | -13.8% | Passing carts or pedestrians partially covering edges |
+| **Motion Blur (15px Linear Camera Shake)** | 76.6% | 55.9% | **64.6%** | -30.6% | High-velocity robot vibration blurs thin frame boundaries |
 
 *Full evaluation records logged in [`results/robustness_report.json`](results/robustness_report.json).*
 
