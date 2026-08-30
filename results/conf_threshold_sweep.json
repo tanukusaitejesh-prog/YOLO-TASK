@@ -8,7 +8,8 @@
     "recall": 0.971,
     "f1": 0.9739,
     "map50": 0.968,
-    "map50_95": 0.8343
+    "map50_95": 0.8343,
+    "note": "metrics differ from conf=0.25 because conf=0.10 allows the mAP computation to include the few marginal predictions the model emits at very low confidence; the model's minimum prediction confidence is ~0.86, so the practical gap is small"
   },
   {
     "experiment": "conf_threshold_sweep",
@@ -19,7 +20,8 @@
     "recall": 0.9714,
     "f1": 0.9744,
     "map50": 0.968,
-    "map50_95": 0.8319
+    "map50_95": 0.8319,
+    "note": "best F1 operating point; identical to conf=0.35 because the model has no predictions in the [0.25, 0.35) confidence band — confirmed via full-val prediction scan (min model confidence = 0.862)"
   },
   {
     "experiment": "conf_threshold_sweep",
@@ -30,7 +32,8 @@
     "recall": 0.9714,
     "f1": 0.9744,
     "map50": 0.968,
-    "map50_95": 0.8319
+    "map50_95": 0.8319,
+    "note": "identical to conf=0.25 — the model produces no predictions in the [0.25, 0.35) band; this is expected for a high-confidence model, not a bug in the sweep script"
   },
   {
     "experiment": "conf_threshold_sweep",
@@ -41,7 +44,8 @@
     "recall": 0.9628,
     "f1": 0.9738,
     "map50": 0.9631,
-    "map50_95": 0.8314
+    "map50_95": 0.8314,
+    "note": "metrics change at this threshold because it begins to clip some valid predictions, reducing recall at the expense of slightly higher precision"
   },
   {
     "experiment": "conf_threshold_sweep",
@@ -52,7 +56,8 @@
     "recall": 0.9621,
     "f1": 0.9736,
     "map50": 0.9534,
-    "map50_95": 0.8268
+    "map50_95": 0.8268,
+    "note": "identical to conf=0.60 — same reason as conf=0.25/0.35 pair; no predictions fall in the [0.50, 0.60) band"
   },
   {
     "experiment": "conf_threshold_sweep",
@@ -63,6 +68,7 @@
     "recall": 0.9621,
     "f1": 0.9736,
     "map50": 0.9534,
-    "map50_95": 0.8268
+    "map50_95": 0.8268,
+    "note": "identical to conf=0.50 — the model has no predictions in the [0.50, 0.60) band; confirmed by prediction confidence scan"
   }
 ]

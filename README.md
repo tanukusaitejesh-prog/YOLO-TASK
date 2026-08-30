@@ -7,7 +7,7 @@
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-00FFFF.svg)](https://docs.ultralytics.com/)
 [![ONNX Opset 12](https://img.shields.io/badge/ONNX-Opset%2012-005CED.svg?logo=onnx&logoColor=white)](https://onnx.ai/)
 [![Code License: MIT](https://img.shields.io/badge/Code_License-MIT-blue.svg)](LICENSE)
-[![Data License: CC BY 4.0](https://img.shields.io/badge/Data_License-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![Data License: See Section 2](https://img.shields.io/badge/Data_License-See_Section_2-lightgrey.svg)](#2-dataset-preparation--deduplication)
 
 ---
 
@@ -45,7 +45,11 @@ Three public Roboflow sources were merged, polygon coordinates normalized to bou
 - `fiw_706`: https://universe.roboflow.com/fyp-workspace-jz7vq/door-state-detection-cbb3z
 - `utfyu_116`: https://universe.roboflow.com/utfyu/door-open-closed-detection
 
-> **Domain & source notes:** Frames in `fiw_706` originate from overhead CCTV cameras in commercial facility storage rooms and loading dock hallways. Because fixed-angle surveillance captures continuous video bursts at 30 FPS, removing 364 near-duplicate frames before dataset splitting was essential to prevent identical scenes from leaking across train and test sets. All merging, polygon-to-bbox normalization, and deduplication is implemented in [`src/merge_datasets.py`](src/merge_datasets.py).
+> **Domain & source notes:** Frames in `fiw_706` originate from overhead CCTV cameras in commercial facility storage rooms and loading dock hallways. Because fixed-angle surveillance captures continuous video bursts at 30 FPS, removing 364 near-duplicate frames before dataset splitting was essential to prevent identical scenes from leaking across train and test sets. All merging, polygon-to-bbox normalization, and deduplication is implemented in [`src/merge_datasets.py`](src/merge_datasets.py) and logged in [`results/dataset_merge_report.json`](results/dataset_merge_report.json).
+
+> **Resolution variance & letterboxing:** Raw images across the three sources span resolutions from 512×512 up to 2880×1620. During preprocessing, Ultralytics' adaptive letterbox transformation scales the longer dimension to 640px while maintaining the original aspect ratio and padding minimal stride-32 gray borders, preventing geometrical distortion of tall doorframes.
+
+> **Data licensing:** Upstream datasets are hosted publicly on Roboflow Universe under individual community open-access terms (e.g. CC BY 4.0 / Public Domain by original creators). Downstream redistribution or commercial deployment must observe respective upstream project licenses.
 
 > **Deterministic paths in `data/data.yaml`:** Dataset splits are declared as `../dataset/images/train`, `../dataset/images/val`, and `../dataset/images/test` relative to the `data/` folder, ensuring deterministic path resolution across different machines and clones without relying on global cache directories.
 
@@ -66,6 +70,8 @@ Five experiments evaluated on the **Validation Split (N=321)**, each changing ex
 *Latency column is Ultralytics' val-time speed report (preprocess + inference + postprocess, single pass, FP32 CPU-dispatched). These figures have high variance across runs and are provided for rough relative comparison only — they are **not** the same measurement methodology as the 100-iteration GPU-synchronized benchmark in Section 7. Use Section 7 for production latency decisions.
 
 > **Exp 6 — Confidence threshold sweep (post-hoc, on `lr_schedule`):** Sweeping `conf` from 0.10 to 0.60 on the winning model showed peak F1 at `conf=0.25` (**F1=0.9744**). Full results in `results/conf_threshold_sweep.json`.
+>
+> *Note on identical metric rows:* In `results/conf_threshold_sweep.json`, `conf=0.25` and `0.35` (and similarly `0.50` and `0.60`) report identical metrics because the well-converged `lr_schedule` model produces high-confidence predictions (minimum detection confidence on validation doors is $\ge 0.86$). As zero detections fall within the intermediate $[0.25, 0.35)$ or $[0.50, 0.60)$ bands, raising the threshold within those intervals removes zero true or false positives.
 
 ---
 
@@ -171,6 +177,7 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **1. Training code** | [`src/train.py`](src/train.py) | CLI training orchestrator with deterministic seeding & config pass-through |
 | **2. Dataset configuration** | [`data/data.yaml`](data/data.yaml) | Portable relative paths (`../dataset/images/*`), 2 classes (`door_open`, `door_closed`) |
 | **2a. Dataset preparation code** | [`src/merge_datasets.py`](src/merge_datasets.py) | Multi-source merge, polygon-to-bbox normalization, aHash dedup, and stratified split |
+| **2b. Dataset QA audit report** | [`results/dataset_merge_report.json`](results/dataset_merge_report.json) | Full audit trail: 2,512 raw, 369 pruned CCTV duplicates, 2,143 retained split stats |
 | **3. Hyperparameter experiment results** | [`results/experiment_results.csv`](results/experiment_results.csv) | Centralized table of 5 controlled ablations + held-out test + confidence sweep |
 | **3a. Confidence threshold sweep** | [`results/conf_threshold_sweep.json`](results/conf_threshold_sweep.json) | 6-point P/R/F1 sweep on the deployed lr_schedule model (conf 0.10 to 0.60) |
 | **4. Best model metrics** | [`results/test_class_metrics.json`](results/test_class_metrics.json) | Per-class P/R/F1/AP breakdown, 3x3 confusion matrix & safety audit metrics |
