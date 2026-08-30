@@ -111,7 +111,10 @@ $$\text{Precision: } \mathbf{97.64\%} \quad|\quad \text{Recall: } \mathbf{93.87\
 
 *Logged in `results/test_class_metrics.json` and `results/metrics_lr_schedule_test.json`.*
 
-> **Note on apparent precision discrepancy:** The per-class P/R figures above come from Ultralytics' PR-curve evaluation, which scans all confidence thresholds and selects the point that maximises the F1 score for each class independently. `door_open` achieves 100% precision at that best-F1 operating point. The confusion matrix below uses a **fixed conf=0.25 threshold**, at which 4 closed-door detections fall above threshold and are misclassified as open. These two metrics measure different things and are not contradictory.
+> **Note on `door_open` 100% Precision & Generalization:**
+> * **PR-Curve Operating Point:** Ultralytics evaluates per-class metrics at the confidence threshold that maximises the $F_1$ score for each class independently. For `door_open`, the model achieves $100.00\%$ precision at this peak threshold because zero false open alarms were proposed on the test split.
+> * **Precision-Recall Trade-off (Not Overfitting):** This $100\%$ precision comes at the expense of recall ($93.57\%$, missing $6.43\%$ of open doors). The model is conservative on open doors rather than overfitted; genuine generalization is demonstrated by the held-out test mAP@0.5:0.95 ($84.52\%$) closely tracking the validation split ($84.62\%$) across completely unseen camera feeds.
+> * **Fixed-Threshold Confusion Matrix:** When evaluated at a fixed $\text{conf}=0.25$ operating point (below), $4$ closed doors fall above threshold and are misclassified as open, resulting in an effective fixed-threshold `door_open` precision of $97.66\%$ ($167 / 171$).
 
 
 ### Confusion Matrix & Safety Asymmetry
