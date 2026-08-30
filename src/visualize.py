@@ -56,7 +56,11 @@ IMG_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
 # ── Drawing ───────────────────────────────────────────────────────────────────
 def draw_result(image: np.ndarray, result) -> np.ndarray:
-    """Draw bounding boxes + confidence labels on a BGR image."""
+    """Draw bounding boxes with filled badge labels on a BGR image.
+
+    Label style matches the committed showcase images:
+    thick box border + filled colour badge + white text at font scale 0.7.
+    """
     img   = image.copy()
     names = result.names
 
@@ -66,20 +70,31 @@ def draw_result(image: np.ndarray, result) -> np.ndarray:
         cls_name        = names[cls_id]
         x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
         color           = CLASS_COLORS.get(cls_name, FALLBACK_COLOR)
-        label           = f"{cls_name}  {conf:.2f}"
+        label           = f"{cls_name.upper().replace('_', ' ')}  {conf * 100:.1f}%"
 
-        # Box
-        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+        # Thick box border
+        cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
 
-        # Label background + text
-        (tw, th), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-        cv2.rectangle(img, (x1, y1 - th - baseline - 4), (x1 + tw + 4, y1), color, -1)
+        # Badge dimensions
+        font       = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.7
+        thickness  = 2
+        (tw, th), baseline = cv2.getTextSize(label, font, font_scale, thickness)
+        pad = 6
+
+        # Filled badge background (above box)
+        badge_y1 = max(0, y1 - th - baseline - 2 * pad)
+        badge_y2 = y1
+        cv2.rectangle(img, (x1, badge_y1), (x1 + tw + 2 * pad, badge_y2), color, -1)
+
+        # White text inside badge
         cv2.putText(
             img, label,
-            (x1 + 2, y1 - baseline - 2),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA,
+            (x1 + pad, y1 - baseline - pad),
+            font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA,
         )
     return img
+
 
 
 def make_grid(images: list, cols: int = 3, cell_w: int = 400, cell_h: int = 300) -> np.ndarray:

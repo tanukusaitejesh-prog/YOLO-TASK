@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────
-# Swift Robotics — Door Open / Closed Detection
+# Door Open / Closed Detection
 # Dataset configuration for Ultralytics YOLO
 # ─────────────────────────────────────────────────────────────
 
@@ -14,3 +14,21 @@ nc: 2
 names:
   0: door_open
   1: door_closed
+
+# ── Dataset Sources (Roboflow Universe) ───────────────────────
+# Three public datasets were downloaded, normalised, deduplicated
+# and merged using src/merge_datasets.py.
+#
+# Source 1  vikashs_1527  — Residential and office doorways
+#   https://universe.roboflow.com/vikash-chaudhary-xufdf/door-open-close
+#   Raw: 1,527 images | Retained after dedup: 1,522 | Format: 10-pt polygon -> bbox
+#
+# Source 2  fiw_706  — Commercial warehouse CCTV overhead cameras
+#   https://universe.roboflow.com/fyp-workspace-jz7vq/door-state-detection-cbb3z
+#   Raw: 691 images | Retained after dedup: 327 (364 burst-frame near-duplicates removed)
+#
+# Source 3  utfyu_116  — Apartment hallways, mobile phone photos
+#   https://universe.roboflow.com/utfyu/door-open-closed-detection
+#   Raw: 294 images | Retained after dedup: 294 | Format: bounding box
+#
+# Final merged split: 1,541 train / 321 val / 281 test  (2,143 total after dedup)

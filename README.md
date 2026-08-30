@@ -40,7 +40,12 @@ Three public Roboflow sources were merged, polygon coordinates normalized to bou
 | `utfyu_116` | 294 | 294 | 0 | Bounding Box | Apartment hallways, mobile phone photos |
 | **Total Canonical** | **2,512** | **2,143** | **369 (14.7%)** | 2 Classes | **1,541 Train / 321 Val / 281 Test** |
 
-> **Domain & source notes:** `vikashs_1527`, `fiw_706`, and `utfyu_116` represent upstream Roboflow Universe dataset project identifiers; the Raw Images column indicates the actual annotated image count validated and ingested during pipeline preprocessing. Frames in `fiw_706` originate from overhead CCTV cameras in commercial facility storage rooms and loading dock hallways: because fixed-angle surveillance captures continuous video bursts at 30 FPS, removing 364 near-duplicate frames before dataset splitting was essential to prevent identical scenes from leaking across train and test sets.
+**Roboflow source URLs (for independent verification):**
+- `vikashs_1527`: https://universe.roboflow.com/vikash-chaudhary-xufdf/door-open-close
+- `fiw_706`: https://universe.roboflow.com/fyp-workspace-jz7vq/door-state-detection-cbb3z
+- `utfyu_116`: https://universe.roboflow.com/utfyu/door-open-closed-detection
+
+> **Domain & source notes:** Frames in `fiw_706` originate from overhead CCTV cameras in commercial facility storage rooms and loading dock hallways. Because fixed-angle surveillance captures continuous video bursts at 30 FPS, removing 364 near-duplicate frames before dataset splitting was essential to prevent identical scenes from leaking across train and test sets. All merging, polygon-to-bbox normalization, and deduplication is implemented in [`src/merge_datasets.py`](src/merge_datasets.py).
 
 > **Deterministic paths in `data/data.yaml`:** Dataset splits are declared as `../dataset/images/train`, `../dataset/images/val`, and `../dataset/images/test` relative to the `data/` folder, ensuring deterministic path resolution across different machines and clones without relying on global cache directories.
 
@@ -50,15 +55,17 @@ Three public Roboflow sources were merged, polygon coordinates normalized to bou
 
 Five experiments evaluated on the **Validation Split (N=321)**, each changing exactly one factor group with all other parameters frozen:
 
-| # | Experiment Name | Model Architecture | Resolution | Key Factor Tested | Precision | Recall | **F1 Score** | mAP@0.5 | **mAP@0.5:0.95** | Latency (ms) |
+| # | Experiment Name | Model Architecture | Resolution | Key Factor Tested | Precision | Recall | **F1 Score** | mAP@0.5 | **mAP@0.5:0.95** | Latency (ms)* |
 |---|---|---|---:|---|---:|---:|---:|---:|---:|---:|
-| 1 | `baseline` | YOLOv8n (3.0M) | 640×640 | Reference (COCO defaults) | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 22.05 ms |
-| 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.23 ms |
-| 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640->960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 ms |
-| **4** | **`lr_schedule` (Best)** | **YOLOv8n (3.0M)** | **640×640** | **Cosine annealing floor `lrf` 0.01->0.001** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73 ms** |
-| 5 | `model_size` | YOLOv8s (11.2M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 ms |
+| 1 | `baseline` | YOLOv8n (3.0M) | 640×640 | Reference (COCO defaults) | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 22.05 |
+| 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.23 |
+| 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640->960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 |
+| **4** | **`lr_schedule` (Best)** | **YOLOv8n (3.0M)** | **640×640** | **Cosine annealing floor `lrf` 0.01->0.001** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73** |
+| 5 | `model_size` | YOLOv8s (11.2M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 |
 
-> **Exp 6 — Confidence threshold sweep (post-hoc):** Sweeping `conf` from 0.10 to 0.60 showed peak F1 at `conf=0.25` (F1=0.9718). This threshold is applied during test inference.
+*Latency column is Ultralytics' val-time speed report (preprocess + inference + postprocess, single pass, FP32 CPU-dispatched). These figures have high variance across runs and are provided for rough relative comparison only — they are **not** the same measurement methodology as the 100-iteration GPU-synchronized benchmark in Section 7. Use Section 7 for production latency decisions.
+
+> **Exp 6 — Confidence threshold sweep (post-hoc, on `lr_schedule`):** Sweeping `conf` from 0.10 to 0.60 on the winning model showed peak F1 at `conf=0.25` (**F1=0.9744**). Full results in `results/conf_threshold_sweep.json`.
 
 ---
 
@@ -95,6 +102,9 @@ $$\text{Precision: } \mathbf{97.64\%} \quad|\quad \text{Recall: } \mathbf{93.87\
 | **All Classes** | **97.64%** | **93.87%** | **0.9572** | **98.07%** | **84.52%** | **281** |
 
 *Logged in `results/test_class_metrics.json` and `results/metrics_lr_schedule_test.json`.*
+
+> **Note on apparent precision discrepancy:** The per-class P/R figures above come from Ultralytics' PR-curve evaluation, which scans all confidence thresholds and selects the point that maximises the F1 score for each class independently. `door_open` achieves 100% precision at that best-F1 operating point. The confusion matrix below uses a **fixed conf=0.25 threshold**, at which 4 closed-door detections fall above threshold and are misclassified as open. These two metrics measure different things and are not contradictory.
+
 
 ### Confusion Matrix & Safety Asymmetry
 
