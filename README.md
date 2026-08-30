@@ -82,11 +82,11 @@ Five experiments evaluated on the **Validation Split (N=321)**, each changing ex
 ### Why It Performed Better
 1. **Strict Localization Superiority (mAP@0.5:0.95):** `lr_schedule` achieved the highest localization score (**0.8462**), outperforming baseline (0.8355), high resolution (0.8327), and the 3.7× larger YOLOv8s (0.8455). Accurate boundary localization is vital for mobile robots to compute door opening aperture widths accurately.
 2. **High Traversability Recall (97.38%):** Maximizes detection of open passageways, preventing unnecessary robot hesitations or costly re-routing.
-3. **Edge Latency & Efficiency:** Executes in **12.52 ms** (PyTorch FP16) and **6.90 ms** (ONNX CUDA), leaving substantial compute headroom for simultaneous SLAM and path planning.
+3. **Edge Latency & Efficiency:** Executes in **11.59 ms** (PyTorch FP16 CUDA forward pass / 12.52 ms end-to-end) and **6.90 ms** (ONNX CUDA), leaving substantial compute headroom for simultaneous SLAM and path planning.
 
 ### Which Hyperparameters Had the Biggest Impact
 * **Cosine Annealing Floor (`lrf`):** Setting `lrf=0.001` (vs baseline `0.01`) was the primary performance driver. While Ultralytics `optimizer="auto"` resolves to AdamW ($\text{lr} \approx 0.00167$) for both baseline and `lr_schedule` ($\text{iterations} = 2,500 < 10,000$), the tighter decay floor allowed late-epoch learning rates to decay down to $1.8 \times 10^{-5}$ (vs $3.3 \times 10^{-5}$). This prevented regression head oscillation around thin door jambs, boosting mAP@0.5:0.95 by **+1.07%**.
-* **Spatial Resolution (`imgsz`):** Increasing resolution to 960×960 improved precision (+0.87%) but dropped recall (-2.22%) and increased latency by +20.4%, proving suboptimal for real-time edge robotics.
+* **Spatial Resolution (`imgsz`):** Increasing resolution to 960×960 improved precision (+0.87%) but dropped recall (-2.22%) and increased CPU latency by +126.2% (184.70 ms vs 81.64 ms baseline; +32.9% end-to-end pipeline latency on GPU), proving suboptimal for real-time edge robotics.
 * **Model Scale (`yolov8s`):** Scaling to 11.2M parameters improved mAP@0.5 to 0.9900 but did not surpass `lr_schedule` on mAP@0.5:0.95 (0.8455 vs 0.8462) despite consuming $3.5\times$ more compute.
 
 *Note: `src/train.py` explicitly supports `optimizer = cfg.get("optimizer", "auto")`, allowing full manual control over optimizer family and learning rate dynamics.*
