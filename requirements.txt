@@ -1,5 +1,5 @@
 # ── Core ML / CV ──────────────────────────────────────────────────────────────
-ultralytics==8.3.40     # YOLOv8 training, evaluation, and ONNX export
+ultralytics==8.4.130    # YOLOv8 training, evaluation, and ONNX export (version used to produce all artifacts)
 torch>=2.1.0            # PyTorch backend (install CUDA build manually if needed)
 torchvision>=0.16.0
 opencv-python==4.10.0.84

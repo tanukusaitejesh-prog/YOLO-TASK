@@ -138,6 +138,8 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **PyTorch FP16 (CUDA)** | NVIDIA RTX 3050 Laptop GPU | **12.52 ms** | 11.22 ms | 18.58 ms | **~79.9 FPS** | `results/benchmark_lr_schedule.json` |
 | **ONNX Runtime (CPU EP)** | Host Intel CPU (Fallback) | **51.64 ms** | 48.17 ms | 78.68 ms | **~19.4 FPS** | `results/benchmark_best_onnx_cpu.json` |
 
+**Timing scope note:** The PyTorch row times `model.predict()` end-to-end (preprocess + forward + NMS + decode). The ONNX rows time `session.run()` only (raw forward pass, no NMS). The ONNX speedup reflects both graph optimization and the narrower measurement scope. In a real pipeline the post-processing overhead (~2 ms) would apply to both — the raw forward pass advantage of ONNX is approximately 2x over PyTorch FP16 on this hardware.
+
 ---
 
 ## 8. Failure Modes & Mitigations
@@ -158,9 +160,11 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 |---|---|---|
 | **1. Training code** | [`src/train.py`](src/train.py) | CLI training orchestrator with deterministic seeding & config pass-through |
 | **2. Dataset configuration** | [`data/data.yaml`](data/data.yaml) | Portable relative paths (`../dataset/images/*`), 2 classes (`door_open`, `door_closed`) |
+| **2a. Dataset preparation code** | [`src/merge_datasets.py`](src/merge_datasets.py) | Multi-source merge, polygon-to-bbox normalization, aHash dedup, and stratified split |
 | **3. Hyperparameter experiment results** | [`results/experiment_results.csv`](results/experiment_results.csv) | Centralized table of 5 controlled ablations + held-out test + confidence sweep |
-| **4. Best model metrics** | [`results/test_class_metrics.json`](results/test_class_metrics.json) | Per-class P/R/F1/AP breakdown, $3\times3$ confusion matrix & safety audit metrics |
-| **5. 3–5 example predictions** | [`results/predictions/`](results/predictions/) | 6 individual test scene predictions + 1 master showcase montage with green/red badges |
+| **3a. Confidence threshold sweep** | [`results/conf_threshold_sweep.json`](results/conf_threshold_sweep.json) | 6-point P/R/F1 sweep on the deployed lr_schedule model (conf 0.10 to 0.60) |
+| **4. Best model metrics** | [`results/test_class_metrics.json`](results/test_class_metrics.json) | Per-class P/R/F1/AP breakdown, 3x3 confusion matrix & safety audit metrics |
+| **5. 3-5 example predictions** | [`results/predictions/`](results/predictions/) | 6 individual test scene predictions + 1 master showcase montage with green/red badges |
 | **6. ONNX model** | [`models/best.onnx`](models/best.onnx) | 12.3 MB Opset 12 static model with verified numerical tensor parity |
 | **7. Short README.md** | [`README.md`](README.md) | Structured technical evaluation report covering methodology, trade-offs & results |
 
