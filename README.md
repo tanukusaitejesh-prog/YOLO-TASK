@@ -1,6 +1,5 @@
-# Swift Robotics — Door Open / Closed Detection Pipeline
-> **Perception Subsystem for Autonomous Mobile Robots (AMRs)**  
-> **Candidate:** Saitejesh Tanuku | **Role:** Junior AI Engineer Technical Evaluation
+# Door Open / Closed Detection — YOLO Pipeline & Technical Evaluation
+> **Junior AI Engineer Technical Task** | **Candidate:** Saitejesh Tanuku
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12.4-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch 2.5.1](https://img.shields.io/badge/PyTorch-2.5.1%2Bcu121-EE4C2C.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
@@ -13,7 +12,7 @@
 
 ## 1. Executive Summary
 
-End-to-end computer vision pipeline to detect whether an architectural doorway is **`door_open`** (traversable) or **`door_closed`** (obstacle) for autonomous mobile robot navigation.
+End-to-end YOLO-based object detection pipeline to detect whether an architectural doorway is **`door_open`** (passageway) or **`door_closed`** (obstacle). Built to demonstrate dataset engineering, hyperparameter tuning, metric evaluation, error analysis, and edge deployment readiness.
 
 ![Live inference demo](results/predictions/inference_demo.gif)
 
@@ -23,10 +22,10 @@ End-to-end computer vision pipeline to detect whether an architectural doorway i
 ```
 
 **Key achievements:**
-- **Deduplication:** Pruned 369 redundant CCTV burst frames (14.7%) via 256-bit aHash before dataset splitting to eliminate train/test data leakage.
-- **Controlled ablations:** 5 controlled training experiments isolating Learning Rate schedules, Model Capacity, Spatial Resolution, and Domain Augmentation, plus 1 post-hoc confidence-threshold analysis.
+- **Dataset engineering & deduplication:** Pruned 369 redundant CCTV burst frames (14.7%) via 256-bit aHash before splitting to eliminate train/test data leakage.
+- **Controlled hyperparameter ablations:** 5 controlled training experiments isolating Learning Rate schedules, Model Capacity, Spatial Resolution, and Domain Augmentation, plus 1 post-hoc confidence-threshold analysis.
 - **Winning model (`lr_schedule`) on held-out test (N=281):** Precision 97.64%, Recall 93.87%, **F1 95.72%**, mAP@0.5 98.07%, mAP@0.5:0.95 84.52%.
-- **Safety asymmetry audit:** Evaluated collision hazards (Closed -> Open: 3.88%) vs fail-safe stops (Open -> Closed: 2.25%) using ground-truth confusion matrix indexing.
+- **Error & safety asymmetry analysis:** Evaluated false traversability hazards (Closed -> Open: 3.88%) vs fail-safe stops (Open -> Closed: 2.25%) using ground-truth confusion matrix indexing.
 - **Production ONNX model (`models/best.onnx`):** 4-tier validated (including numerical output tensor parity) and profiled on both CUDA (6.90 ms / ~145 FPS) and CPU (51.64 ms / ~19 FPS).
 
 ---
