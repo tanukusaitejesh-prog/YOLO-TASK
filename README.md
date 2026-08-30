@@ -59,15 +59,15 @@ Three public Roboflow sources were merged, polygon coordinates normalized to bou
 
 Five experiments evaluated on the **Validation Split (N=321)**, each changing exactly one factor group with all other parameters frozen:
 
-| # | Experiment Name | Model Architecture | Resolution | Key Factor Tested | Precision | Recall | **F1 Score** | mAP@0.5 | **mAP@0.5:0.95** | Latency (ms)* |
-|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|
-| 1 | `baseline` | YOLOv8n (3.0M) | 640×640 | Reference (COCO defaults) | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 22.05 |
-| 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.23 |
-| 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640->960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 |
-| **4** | **`lr_schedule` (Best)** | **YOLOv8n (3.0M)** | **640×640** | **Cosine annealing floor `lrf` 0.01->0.001** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73** |
-| 5 | `model_size` | YOLOv8s (11.2M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 |
+| # | Experiment Name | Model Architecture | Resolution | Key Factor Tested | Precision | Recall | **F1 Score** | mAP@0.5 | **mAP@0.5:0.95** | Latency (CUDA)* | Throughput |
+|---|---|---|---:|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | `baseline` | YOLOv8n (3.0M) | 640×640 | Reference (COCO defaults) | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 12.38 ms | ~80.7 FPS |
+| 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 11.61 ms | ~86.1 FPS |
+| 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640->960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 12.31 ms | ~81.3 FPS |
+| **4** | **`lr_schedule` (Best)** | **YOLOv8n (3.0M)** | **640×640** | **Cosine annealing floor `lrf` 0.01->0.001** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **11.59 ms** | **~86.3 FPS** |
+| 5 | `model_size` | YOLOv8s (11.2M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 13.32 ms | ~75.1 FPS |
 
-*Latency column is Ultralytics' val-time speed report (preprocess + inference + postprocess, single pass, FP32 CPU-dispatched). These figures have high variance across runs and are provided for rough relative comparison only — they are **not** the same measurement methodology as the 100-iteration GPU-synchronized benchmark in Section 7. Use Section 7 for production latency decisions.
+*Standardized hardware benchmark measured on NVIDIA RTX 3050 Laptop GPU (PyTorch FP16, 20 warmup runs + 100 benchmark iterations with GPU synchronization barriers; full artifact logged in [`results/experiment_benchmarks.json`](results/experiment_benchmarks.json)). On CPU (FP32), model execution scales from 81.64 ms (YOLOv8n baseline) to 184.70 ms (high_resolution) and 222.96 ms (model_size / YOLOv8s, 3.7× parameter volume).
 
 > **Exp 6 — Confidence threshold sweep (post-hoc, on `lr_schedule`):** Sweeping `conf` from 0.10 to 0.60 on the winning model showed peak F1 at `conf=0.25` (**F1=0.9744**). Full results in `results/conf_threshold_sweep.json`.
 >
@@ -180,6 +180,7 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **2b. Dataset QA audit report** | [`results/dataset_merge_report.json`](results/dataset_merge_report.json) | Full audit trail: 2,512 raw, 369 pruned CCTV duplicates, 2,143 retained split stats |
 | **3. Hyperparameter experiment results** | [`results/experiment_results.csv`](results/experiment_results.csv) | Centralized table of 5 controlled ablations + held-out test + confidence sweep |
 | **3a. Confidence threshold sweep** | [`results/conf_threshold_sweep.json`](results/conf_threshold_sweep.json) | 6-point P/R/F1 sweep on the deployed lr_schedule model (conf 0.10 to 0.60) |
+| **3b. 5-model hardware benchmark** | [`results/experiment_benchmarks.json`](results/experiment_benchmarks.json) | 100-run GPU (FP16) & CPU (FP32) latency profiles across all 5 model checkpoints |
 | **4. Best model metrics** | [`results/test_class_metrics.json`](results/test_class_metrics.json) | Per-class P/R/F1/AP breakdown, 3x3 confusion matrix & safety audit metrics |
 | **5. 3-5 example predictions** | [`results/predictions/`](results/predictions/) | 6 individual test scene predictions + 1 master showcase montage with green/red badges |
 | **6. ONNX model** | [`models/best.onnx`](models/best.onnx) | 12.3 MB Opset 12 static model with verified numerical tensor parity |
