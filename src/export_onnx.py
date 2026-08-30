@@ -78,7 +78,7 @@ def export_and_validate(weights: str, imgsz: int, opset: int) -> None:
     print("  Checking ONNX model structure…")
     onnx_model = onnx.load(str(onnx_dest))
     onnx.checker.check_model(onnx_model)
-    print("  ✓  Structure valid\n")
+    print("  [OK] Structure valid\n")
 
     # ── Step 3: ONNXRuntime inference check ───────────────────────────────────
     print("  Running test inference with ONNXRuntime…")
@@ -99,7 +99,7 @@ def export_and_validate(weights: str, imgsz: int, opset: int) -> None:
 
     dummy   = np.random.rand(1, 3, imgsz, imgsz).astype(np.float32)
     onnx_outputs = session.run(None, {in_name: dummy})
-    print(f"  ✓  Inference succeeded  (output[0].shape = {onnx_outputs[0].shape})\n")
+    print(f"  [OK] Inference succeeded (output[0].shape = {onnx_outputs[0].shape})\n")
 
     # ── Step 4: Numerical Parity Check (PyTorch vs ONNX) ─────────────────────
     print("  Evaluating numerical parity (PyTorch vs ONNX raw tensor outputs)…")
@@ -122,9 +122,9 @@ def export_and_validate(weights: str, imgsz: int, opset: int) -> None:
     print(f"  Max absolute error : {max_diff:.2e}")
     print(f"  Mean absolute error: {mean_diff:.2e}")
     if is_close:
-        print(f"  ✓  Numerical parity confirmed (np.allclose atol=1e-3, rtol=1e-3)\n")
+        print(f"  [PASS] Numerical parity confirmed (np.allclose atol=1e-3, rtol=1e-3)\n")
     else:
-        print(f"  ⚠  WARNING: Numerical discrepancy detected! Max delta ({max_diff:.2e}) exceeds tolerance (1e-3)\n")
+        print(f"  [WARN] Numerical discrepancy detected: max delta ({max_diff:.2e}) exceeds tolerance (1e-3)\n")
 
     print(f"{'='*55}")
     print(f"  Export done.  Deliver: models/best.pt  +  models/best.onnx")

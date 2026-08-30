@@ -16,7 +16,7 @@
 End-to-end computer vision pipeline to detect whether an architectural doorway is **`door_open`** (traversable) or **`door_closed`** (obstacle) for autonomous mobile robot navigation.
 
 ```
-[Multi-Source Raw Data] ──► [aHash Dedup (-14.7%)] ──► [6 Controlled Experiments] ──► [Held-Out Test] ──► [ONNX Export]
+[Multi-Source Raw Data] --> [aHash Dedup (-14.7%)] --> [6 Controlled Experiments] --> [Held-Out Test] --> [ONNX Export]
       (2,512 images)              (2,143 clean)           (LR, Scale, Aug, Size)       (95.7% F1)          (CUDA / CPU)
 ```
 
@@ -24,7 +24,7 @@ End-to-end computer vision pipeline to detect whether an architectural doorway i
 - **Deduplication:** Pruned 369 redundant CCTV burst frames (14.7%) via 256-bit aHash before dataset splitting to eliminate train/test data leakage.
 - **Controlled ablations:** 6 experiments — 5 training runs isolating Learning Rate schedules, Model Capacity, Spatial Resolution, and Domain Augmentation, plus a post-hoc confidence threshold sweep.
 - **Winning model (`lr_schedule`) on held-out test (N=281):** Precision 97.64%, Recall 93.87%, **F1 95.72%**, mAP@0.5 98.07%, mAP@0.5:0.95 84.52%.
-- **Safety asymmetry audit:** Evaluated collision hazards (Closed→Open: 3.88%) vs fail-safe stops (Open→Closed: 2.25%) using ground-truth confusion matrix indexing.
+- **Safety asymmetry audit:** Evaluated collision hazards (Closed -> Open: 3.88%) vs fail-safe stops (Open -> Closed: 2.25%) using ground-truth confusion matrix indexing.
 - **Production ONNX model (`models/best.onnx`):** 4-tier validated (including numerical output tensor parity) and profiled on both CUDA (6.90 ms / ~145 FPS) and CPU (51.64 ms / ~19 FPS).
 
 ---
@@ -35,7 +35,7 @@ Three public Roboflow sources were merged, polygon coordinates normalized to bou
 
 | Source | Raw Images | Retained | Pruned | Format Normalized | Visual Domain |
 |---|---:|---:|---:|---|---|
-| `vikashs_1527` | 1,527 | 1,522 | 5 | 10-pt Polygon → BBox | Residential and office room doorways |
+| `vikashs_1527` | 1,527 | 1,522 | 5 | 10-pt Polygon -> BBox | Residential and office room doorways |
 | `fiw_706` | 691 | 327 | 364 | Bounding Box | Commercial warehouse, loading docks & storage corridor CCTV |
 | `utfyu_116` | 294 | 294 | 0 | Bounding Box | Apartment hallways, mobile phone photos |
 | **Total Canonical** | **2,512** | **2,143** | **369 (14.7%)** | 2 Classes | **1,541 Train / 321 Val / 281 Test** |
@@ -54,8 +54,8 @@ Five experiments evaluated on the **Validation Split (N=321)**, each changing ex
 |---|---|---|---:|---|---:|---:|---:|---:|---:|---:|
 | 1 | `baseline` | YOLOv8n (3.0M) | 640×640 | Reference (COCO defaults) | 0.9704 | 0.9690 | 0.9697 | 0.9757 | 0.8355 | 22.05 ms |
 | 2 | `augmentation` | YOLOv8n (3.0M) | 640×640 | +HSV jitter, shear (2.0), mixup (0.1) | 0.9696 | 0.9645 | 0.9670 | 0.9846 | 0.8197 | 21.23 ms |
-| 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640→960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 ms |
-| **4** | **`lr_schedule` 🏆** | **YOLOv8n (3.0M)** | **640×640** | **Cosine annealing floor `lrf` 0.01→0.001** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73 ms** |
+| 3 | `high_resolution`| YOLOv8n (3.0M) | 960×960 | Spatial scale 640->960px, batch 8 | 0.9791 | 0.9468 | 0.9627 | 0.9865 | 0.8327 | 26.56 ms |
+| **4** | **`lr_schedule` (Best)** | **YOLOv8n (3.0M)** | **640×640** | **Cosine annealing floor `lrf` 0.01->0.001** | **0.9680** | **0.9738** | **0.9709** | **0.9806** | **0.8462** | **17.73 ms** |
 | 5 | `model_size` | YOLOv8s (11.2M) | 640×640 | Higher model capacity (3.7× params) | 0.9800 | 0.9651 | 0.9725 | 0.9900 | 0.8455 | 18.80 ms |
 
 > **Exp 6 — Confidence threshold sweep (post-hoc):** Sweeping `conf` from 0.10 to 0.60 showed peak F1 at `conf=0.25` (F1=0.9718). This threshold is applied during test inference.
@@ -64,7 +64,7 @@ Five experiments evaluated on the **Validation Split (N=321)**, each changing ex
 
 ## 4. Model Selection Rationale & Hyperparameter Impact Analysis
 
-**Selected Best Model: `lr_schedule` (Experiment 4 🏆)**
+**Selected Best Model: `lr_schedule` (Experiment 4)**
 
 ### Why It Performed Better
 1. **Strict Localization Superiority (mAP@0.5:0.95):** `lr_schedule` achieved the highest localization score (**0.8462**), outperforming baseline (0.8355), high resolution (0.8327), and the 3.7× larger YOLOv8s (0.8455). Accurate boundary localization is vital for mobile robots to compute door opening aperture widths accurately.
@@ -105,8 +105,8 @@ Actual Closed            4                98                    1               
 ```
 
 > **Robotics Safety Asymmetry Audit:**
-> * **False Traversability Hazard (Actual Closed → Predicted Open):** Occurred in **4 out of 103 closed doors (3.88%)**. Predicting a closed door as open creates a collision hazard. In deployment, a 3-frame temporal consensus filter requires 3 consecutive agreeing detections before clear footprint commands are dispatched to Nav2.
-> * **Fail-Safe Pause (Actual Open → Predicted Closed):** Occurred in **4 out of 178 open doors (2.25%)**. This error causes the robot to momentarily pause or re-route, representing a safe failure mode.
+> * **False Traversability Hazard (Actual Closed -> Predicted Open):** Occurred in **4 out of 103 closed doors (3.88%)**. Predicting a closed door as open creates a collision hazard. In deployment, a 3-frame temporal consensus filter requires 3 consecutive agreeing detections before clear footprint commands are dispatched to Nav2.
+> * **Fail-Safe Pause (Actual Open -> Predicted Closed):** Occurred in **4 out of 178 open doors (2.25%)**. This error causes the robot to momentarily pause or re-route, representing a safe failure mode.
 > * **Missed Detections (Background):** 7 open doors (3.93%) and 1 closed door (0.97%) had no overlapping prediction above threshold.
 
 ---
@@ -147,7 +147,7 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **Low Contrast / Glare** | Missed closed door in dim hallway | Door panel blends with frame | Contrast-adaptive histogram equalization |
 | **Partial Occlusion** | Broken detection box | Carts/people block door edges | Cutout & synthetic foreground occlusion training |
 | **Glass / Specular Reflection** | Closed glass door misidentified | Frame-only visual feature ambiguity | Cross-validate with 2D LiDAR / depth point cloud |
-| **Ajar Door (5°–15°)** | Ambiguous state | Narrow visual opening gap | Calculate metric aperture width via RGB-D sensor |
+| **Ajar Door (5 deg - 15 deg)** | Ambiguous state | Narrow visual opening gap | Calculate metric aperture width via RGB-D sensor |
 | **Small / Distant Door (>10m)** | Low confidence score | Bounding box occupies <2% of sensor | Adaptive Region-of-Interest (ROI) digital crop |
 
 ---
