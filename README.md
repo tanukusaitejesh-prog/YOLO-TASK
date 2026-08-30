@@ -15,14 +15,16 @@
 
 End-to-end computer vision pipeline to detect whether an architectural doorway is **`door_open`** (traversable) or **`door_closed`** (obstacle) for autonomous mobile robot navigation.
 
+![Live inference demo](results/predictions/inference_demo.gif)
+
 ```
-[Multi-Source Raw Data] --> [aHash Dedup (-14.7%)] --> [6 Controlled Experiments] --> [Held-Out Test] --> [ONNX Export]
-      (2,512 images)              (2,143 clean)           (LR, Scale, Aug, Size)       (95.7% F1)          (CUDA / CPU)
+[Multi-Source Raw Data] --> [aHash Dedup (-14.7%)] --> [5 Controlled Exp + Conf Sweep] --> [Held-Out Test] --> [ONNX Export]
+      (2,512 images)              (2,143 clean)              (LR, Scale, Aug, Size)             (95.7% F1)          (CUDA / CPU)
 ```
 
 **Key achievements:**
 - **Deduplication:** Pruned 369 redundant CCTV burst frames (14.7%) via 256-bit aHash before dataset splitting to eliminate train/test data leakage.
-- **Controlled ablations:** 6 experiments — 5 training runs isolating Learning Rate schedules, Model Capacity, Spatial Resolution, and Domain Augmentation, plus a post-hoc confidence threshold sweep.
+- **Controlled ablations:** 5 controlled training experiments isolating Learning Rate schedules, Model Capacity, Spatial Resolution, and Domain Augmentation, plus 1 post-hoc confidence-threshold analysis.
 - **Winning model (`lr_schedule`) on held-out test (N=281):** Precision 97.64%, Recall 93.87%, **F1 95.72%**, mAP@0.5 98.07%, mAP@0.5:0.95 84.52%.
 - **Safety asymmetry audit:** Evaluated collision hazards (Closed -> Open: 3.88%) vs fail-safe stops (Open -> Closed: 2.25%) using ground-truth confusion matrix indexing.
 - **Production ONNX model (`models/best.onnx`):** 4-tier validated (including numerical output tensor parity) and profiled on both CUDA (6.90 ms / ~145 FPS) and CPU (51.64 ms / ~19 FPS).
@@ -121,17 +123,16 @@ Actual Closed            4                98                    1               
 ```
 
 > **Robotics Safety Asymmetry Audit:**
-> * **False Traversability Hazard (Actual Closed -> Predicted Open):** Occurred in **4 out of 103 closed doors (3.88%)**. Predicting a closed door as open creates a collision hazard. In deployment, a 3-frame temporal consensus filter requires 3 consecutive agreeing detections before clear footprint commands are dispatched to Nav2.
+> * **False Traversability Hazard (Actual Closed -> Predicted Open):** Occurred in **4 out of 103 closed doors (3.88%)**. Predicting a closed door as open creates a collision hazard.
 > * **Fail-Safe Pause (Actual Open -> Predicted Closed):** Occurred in **4 out of 178 open doors (2.25%)**. This error causes the robot to momentarily pause or re-route, representing a safe failure mode.
 > * **Missed Detections (Background):** 7 open doors (3.93%) and 1 closed door (0.97%) had no overlapping prediction above threshold.
+> * **Proposed Deployment Mitigation:** In a live ROS2/Nav2 navigation stack, an upstream 3-frame temporal consensus filter is recommended before dispatching clear footprint commands to Nav2, suppressing transient single-frame Closed -> Open false traversability hazards.
 
 ---
 
-## 6. Example Predictions & Live Inference Demo
+## 6. Example Predictions & Showcase Montage
 
 Detections generated directly from the winning `lr_schedule` model on held-out test scenes across residential, office, and commercial environments:
-
-![Live inference demo](results/predictions/inference_demo.gif)
 
 ![Prediction showcase](results/predictions/example_predictions_showcase.jpg)
 
@@ -156,7 +157,9 @@ python src/export_onnx.py --weights runs/detect/lr_schedule/weights/best.pt --im
 | **PyTorch FP16 (CUDA)** | NVIDIA RTX 3050 Laptop GPU | **12.52 ms** | 11.22 ms | 18.58 ms | **~79.9 FPS** | `results/benchmark_lr_schedule.json` |
 | **ONNX Runtime (CPU EP)** | Host Intel CPU (Fallback) | **51.64 ms** | 48.17 ms | 78.68 ms | **~19.4 FPS** | `results/benchmark_best_onnx_cpu.json` |
 
-**Timing scope note:** The PyTorch row times `model.predict()` end-to-end (preprocess + forward + NMS + decode). The ONNX rows time `session.run()` only (raw forward pass, no NMS). The ONNX speedup reflects both graph optimization and the narrower measurement scope. In a real pipeline the post-processing overhead (~2 ms) would apply to both — the raw forward pass advantage of ONNX is approximately 2x over PyTorch FP16 on this hardware.
+> **Timing scope note:** The PyTorch row times `model.predict()` end-to-end (preprocess + forward + NMS + decode). The ONNX rows time `session.run()` only (raw forward pass, no NMS). Post-processing (NMS, coordinate decoding) adds additional overhead in a production pipeline; the reported ONNX figure isolates optimized graph execution.
+>
+> **Edge hardware note:** Embedded target deployment (e.g. NVIDIA Jetson Orin with TensorRT) was not benchmarked directly due to edge hardware availability; production readiness was validated via standard ONNX Opset 12 export and multi-runtime profiling on host CUDA (RTX 3050) and Intel CPU execution providers.
 
 ---
 
@@ -188,7 +191,7 @@ Evaluated via [`src/robustness_eval.py`](src/robustness_eval.py) using strict sp
 ### Production Deployment Recommendation
 - **Model & Runtime:** `YOLOv8n (lr_schedule)` exported to **ONNX (Opset 12)** with TensorRT or CUDA Execution Provider.
 - **Operating Point:** `conf=0.25`, `iou=0.45` (validated peak F1 operating threshold).
-- **Safety Consensus Filter:** Require **3 consecutive agreeing frames** before dispatching dynamic traversability updates to the Nav2 local costmap, effectively eliminating transient Closed -> Open collision hazards.
+- **Proposed Safety Consensus Policy:** Require **3 consecutive agreeing frames** before dispatching dynamic traversability updates to the Nav2 local costmap, effectively eliminating transient Closed -> Open collision hazards.
 
 ---
 
